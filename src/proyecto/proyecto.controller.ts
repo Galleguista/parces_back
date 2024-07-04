@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -11,5 +11,10 @@ export class ProyectoController {
   @Post('create')
   async create(@Body() createProyectoDto: CreateProyectoDto) {
     return this.proyectoService.createProyecto(createProyectoDto);
+  }
+
+  @Get()
+  async getAll() {
+    return this.proyectoService.getAllProyectos();
   }
 }

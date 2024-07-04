@@ -5,6 +5,14 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProyectoModule } from './proyecto/proyecto.module';
 import { MercadoModule } from './mercado/mercado.module';
+import { MuroModule } from './admin/muro/muro.module';
+import { ProfileModule } from './admin/profile/profile.module';
+import { ChatModule } from './admin/chat/chat.module';
+import { GruposModule } from './admin/grupos/grupos.module';
+import { RecursoModule } from './admin/recurso/recurso.module';
+import { LogrosModule } from './admin/logros/logros.module';
+import { ForosModule } from './admin/foros/foros.module';
+import { EventosModule } from './admin/eventos/eventos.module';
 
 @Module({
   imports: [
@@ -29,6 +37,14 @@ import { MercadoModule } from './mercado/mercado.module';
     UsersModule,
     ProyectoModule,
     MercadoModule,
+    MuroModule,
+    ProfileModule,
+    ChatModule,
+    GruposModule,
+    RecursoModule,
+    LogrosModule,
+    ForosModule,
+    EventosModule,
   ],
 })
 export class AppModule {}

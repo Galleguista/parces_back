@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Proyecto } from './entities/proyecto.entity';
+
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
+import { Proyecto } from './entities/proyecto.entity';
 
 @Injectable()
 export class ProyectoService {
@@ -14,5 +15,9 @@ export class ProyectoService {
   async createProyecto(createProyectoDto: CreateProyectoDto): Promise<Proyecto> {
     const newProyecto = this.proyectoRepository.create(createProyectoDto);
     return this.proyectoRepository.save(newProyecto);
+  }
+
+  async getAllProyectos(): Promise<Proyecto[]> {
+    return this.proyectoRepository.find();
   }
 }

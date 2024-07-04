@@ -28,4 +28,7 @@ export class Usuario {
 
   @Column('text', { nullable: true })
   direccion: string;
+
+  @Column({ type: 'bytea', nullable: true })
+  avatar: Buffer;
 }
