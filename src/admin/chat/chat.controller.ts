@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param, Request } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CreateChatDto } from './dto/create-chat.dto';
+import { CreateMensajeDto } from './dto/create-mensage.dto';
+
 
 @Controller('chat')
 export class ChatController {
@@ -9,17 +11,33 @@ export class ChatController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  async create(@Body() createChatDto: CreateChatDto, @Request() req) {
+  async createChat(@Body() createChatDto: CreateChatDto, @Request() req) {
     const usuarioId: string = req.user.usuario_id;
     return this.chatService.createChat(createChatDto, usuarioId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('mensajes')
+  @Get()
   async getChats(@Request() req) {
     const usuarioId: string = req.user.usuario_id;
-    const receptorId: string = req.query.receptorId;
-    return this.chatService.getChats(usuarioId, receptorId);
+    return this.chatService.getChats(usuarioId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('mensajes/:receptorId')
+  async getChatMessages(@Request() req, @Param('receptorId') receptorId: string) {
+    const usuarioId: string = req.user.usuario_id;
+    return this.chatService.getChatMessages(usuarioId, receptorId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':chatId/mensajes')
+  async createMensaje(
+    @Param('chatId') chatId: string,
+    @Body() createMensajeDto: CreateMensajeDto,
+    @Request() req
+  ) {
+    const usuarioId: string = req.user.usuario_id;
+    return this.chatService.createMensaje(chatId, createMensajeDto, usuarioId);
   }
 }
-

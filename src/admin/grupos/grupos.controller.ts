@@ -4,7 +4,6 @@ import { CreateGrupoDto } from './dto/create-grupo.dto';
 import { AddGrupoMiembroDto } from './dto/add-grupo-miembro.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-
 @Controller('grupos')
 export class GruposController {
   constructor(private readonly gruposService: GruposService) {}
@@ -25,6 +24,12 @@ export class GruposController {
   @Get(':grupoId')
   async getGrupoById(@Param('grupoId') grupoId: string) {
     return this.gruposService.getGrupoById(grupoId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getGrupos() {
+    return this.gruposService.getGrupos();
   }
 
   @UseGuards(JwtAuthGuard)

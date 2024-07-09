@@ -13,6 +13,8 @@ import { RecursoModule } from './admin/recurso/recurso.module';
 import { LogrosModule } from './admin/logros/logros.module';
 import { ForosModule } from './admin/foros/foros.module';
 import { EventosModule } from './admin/eventos/eventos.module';
+import { AmigosModule } from './admin/chat/amigos/amigos.module';
+
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { EventosModule } from './admin/eventos/eventos.module';
     LogrosModule,
     ForosModule,
     EventosModule,
+    AmigosModule,
   ],
 })
 export class AppModule {}
