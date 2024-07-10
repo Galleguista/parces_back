@@ -1,34 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { MensajeService } from './mensaje.service';
 import { CreateMensajeDto } from './dto/create-mensaje.dto';
-import { UpdateMensajeDto } from './dto/update-mensaje.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+
 
 @Controller('mensaje')
 export class MensajeController {
   constructor(private readonly mensajeService: MensajeService) {}
 
-  @Post()
-  create(@Body() createMensajeDto: CreateMensajeDto) {
-    return this.mensajeService.create(createMensajeDto);
+  @UseGuards(JwtAuthGuard)
+  @Post('create')
+  async create(@Body() createMensajeDto: CreateMensajeDto) {
+    return this.mensajeService.createMensaje(createMensajeDto);
   }
 
-  @Get()
-  findAll() {
-    return this.mensajeService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.mensajeService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMensajeDto: UpdateMensajeDto) {
-    return this.mensajeService.update(+id, updateMensajeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.mensajeService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  @Get(':chatId')
+  async getMensajes(@Param('chatId') chatId: string) {
+    return this.mensajeService.getMensajes(chatId);
   }
 }

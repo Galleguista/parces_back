@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { GruposService } from './grupos.service';
 import { CreateGrupoDto } from './dto/create-grupo.dto';
 import { AddGrupoMiembroDto } from './dto/add-grupo-miembro.dto';
@@ -10,31 +10,27 @@ export class GruposController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  async createGrupo(@Body() createGrupoDto: CreateGrupoDto) {
-    return this.gruposService.createGrupo(createGrupoDto);
+  async create(@Body() createGrupoDto: CreateGrupoDto, @Request() req) {
+    const usuarioId: string = req.user.sub;
+    return this.gruposService.createGrupo(createGrupoDto, usuarioId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':grupoId/miembros')
-  async addMiembro(@Param('grupoId') grupoId: string, @Body() addGrupoMiembroDto: AddGrupoMiembroDto) {
-    return this.gruposService.addMiembro(grupoId, addGrupoMiembroDto);
+  async addMiembro(@Param('grupoId') grupoId: string, @Request() req) {
+    const usuarioId: string = req.user.sub;
+    return this.gruposService.addMiembro(grupoId, usuarioId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get(':grupoId')
-  async getGrupoById(@Param('grupoId') grupoId: string) {
-    return this.gruposService.getGrupoById(grupoId);
-  }
-
-  @UseGuards(JwtAuthGuard)
   @Get()
-  async getGrupos() {
+  findAll() {
     return this.gruposService.getGrupos();
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':grupoId/mensajes')
-  async getMensajes(@Param('grupoId') grupoId: string) {
-    return this.gruposService.getMensajes(grupoId);
+  @Post(':id/miembros')
+  async addMemberToGroup(@Param('id') grupoId: string, @Request() req) {
+    const usuarioId: string = req.user.sub;
+    return this.gruposService.addMemberToGroup(grupoId, usuarioId);
   }
 }

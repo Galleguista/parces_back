@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { Chat } from '../../entities/chat.entity';
 import { Usuario } from 'src/users/entity/usuario.entity';
 
@@ -8,26 +8,30 @@ export class Mensaje {
   @PrimaryGeneratedColumn('uuid')
   mensaje_id: string;
 
-  @Column('uuid')
+  @ManyToOne(() => Chat,)
+  chat: Chat;
+
+  @Column()
   chat_id: string;
 
-  @Column('uuid')
+  @ManyToOne(() => Usuario,)
+  usuario: Usuario;
+
+  @Column()
   usuario_id: string;
 
-  @Column('text')
+  @ManyToOne(() => Usuario)
+  receptor: Usuario;
+
+  @Column()
+  receptor_id: string;
+
+  @Column({ nullable: true })
   contenido: string;
 
-  @Column('text', { nullable: true })
+  @Column({ nullable: true })
   imagen_url: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha_envio: Date;
-
-  @ManyToOne(() => Chat,)
-  @JoinColumn({ name: 'chat_id' })
-  chat: Chat;
-
-  @ManyToOne(() => Usuario,)
-  @JoinColumn({ name: 'usuario_id' })
-  usuario: Usuario;
 }

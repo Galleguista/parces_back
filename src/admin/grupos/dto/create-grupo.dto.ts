@@ -1,6 +1,4 @@
 export class CreateGrupoDto {
-    nombre: string;
-    descripcion?: string;
-    imagen_url?: string;
-  }
-  
+  nombre: string;
+  descripcion: string;
+}

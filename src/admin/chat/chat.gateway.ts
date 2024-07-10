@@ -12,11 +12,17 @@ import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 
+import { MensajeService } from './mensaje/mensaje.service';
+import { CreateMensajeDto } from './dto/create-mensage.dto';
+
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly mensajeService: MensajeService,
+  ) {}
 
   afterInit(server: Server) {
     console.log('Init');
@@ -31,19 +37,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('sendMessage')
-  async handleSendMessage(@MessageBody() createChatDto: CreateChatDto, @ConnectedSocket() client: Socket) {
+  async handleSendMessage(@MessageBody() createMensajeDto: CreateMensajeDto, @ConnectedSocket() client: Socket) {
     const usuarioId: string = client.handshake.query.usuario_id as string;
-    const chat = await this.chatService.createChat(createChatDto, usuarioId);
-    this.server.to(createChatDto.receptor_id).emit('receiveMessage', chat);
-    return chat;
+    createMensajeDto.usuario_id = usuarioId;
+    const mensaje = await this.mensajeService.createMensaje(createMensajeDto);
+    this.server.to(createMensajeDto.receptor_id).emit('receiveMessage', mensaje);
+    return mensaje;
   }
 
   @SubscribeMessage('sendGroupMessage')
-  async handleSendGroupMessage(@MessageBody() createChatDto: CreateChatDto, @ConnectedSocket() client: Socket) {
+  async handleSendGroupMessage(@MessageBody() createMensajeDto: CreateMensajeDto, @ConnectedSocket() client: Socket) {
     const usuarioId: string = client.handshake.query.usuario_id as string;
-    const chat = await this.chatService.createChat(createChatDto, usuarioId);
-    this.server.to(createChatDto.receptor_id).emit('receiveGroupMessage', chat);
-    return chat;
+    createMensajeDto.usuario_id = usuarioId;
+    const mensaje = await this.mensajeService.createMensaje(createMensajeDto);
+    this.server.to(createMensajeDto.chat_id).emit('receiveGroupMessage', mensaje);
+    return mensaje;
   }
 
   @SubscribeMessage('joinGroup')

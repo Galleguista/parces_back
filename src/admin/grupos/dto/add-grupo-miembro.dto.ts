@@ -1,4 +1,3 @@
 export class AddGrupoMiembroDto {
-    usuario_id: string;
-  }
-  
+  usuario_id: string;
+}

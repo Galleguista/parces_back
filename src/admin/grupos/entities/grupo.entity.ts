@@ -1,23 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { GrupoMiembro } from './grupo-miembro.entity';
 
-@Entity('grupo')
+@Entity('grupos')
 export class Grupo {
   @PrimaryGeneratedColumn('uuid')
   grupo_id: string;
 
-  @Column({ length: 255 })
+  @Column()
   nombre: string;
 
-  @Column('text', { nullable: true })
+  @Column()
   descripcion: string;
 
-  @Column('text', { nullable: true })
-  imagen_url: string;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  fecha_creacion: Date;
-
-  @OneToMany(() => GrupoMiembro, grupoMiembro => grupoMiembro.grupo)
+  @OneToMany(() => GrupoMiembro, (grupoMiembro) => grupoMiembro.grupo)
   miembros: GrupoMiembro[];
 }

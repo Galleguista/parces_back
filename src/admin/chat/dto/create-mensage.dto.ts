@@ -1,6 +1,7 @@
-// src/chat/dto/create-mensaje.dto.ts
 export class CreateMensajeDto {
-    contenido: string;
-    imagen_url?: string;
-  }
-  
+  chat_id: string;
+  usuario_id: string;
+  receptor_id: string;
+  contenido?: string;
+  imagen_url?: string;
+}
