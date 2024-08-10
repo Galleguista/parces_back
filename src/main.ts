@@ -14,6 +14,7 @@ async function bootstrap() {
   .setTitle('Parces Agronaptic API')
   .setDescription('API para la aplicación de Parces Agronaptic')
   .setVersion('1.0')
+  .addBearerAuth()
   .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document, {

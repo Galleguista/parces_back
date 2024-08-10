@@ -2,7 +2,9 @@
 import { Controller, Post, Get, Param, UseGuards } from '@nestjs/common';
 import { LogrosService } from './logros.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('logros')
 @Controller('logros')
 export class LogrosController {
   constructor(private readonly logrosService: LogrosService) {}

@@ -5,7 +5,9 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RecursosService } from './recurso.service';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('recursos')
 @Controller('recursos')
 export class RecursosController {
   constructor(private readonly recursosService: RecursosService) {}

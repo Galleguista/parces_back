@@ -4,7 +4,9 @@ import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('muro')
 @Controller('admin/muro')
 export class MuroController {
   constructor(private readonly muroService: MuroService) {}

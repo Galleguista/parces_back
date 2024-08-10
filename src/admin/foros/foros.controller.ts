@@ -1,8 +1,9 @@
 import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
 import { ForosService } from './foros.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
-
+@ApiTags('foros')
 @Controller('foros')
 export class ForosController {
   constructor(private readonly forosService: ForosService) {}

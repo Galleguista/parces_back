@@ -2,7 +2,9 @@ import { Controller, Post, Body, Get, Param, Delete, UseGuards } from '@nestjs/c
 import { EventosService } from './eventos.service';
 import { CreateEventoDto } from './dto/create-evento.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('eventos')
 @Controller('eventos')
 export class EventosController {
   constructor(private readonly eventosService: EventosService) {}

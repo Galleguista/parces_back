@@ -2,7 +2,9 @@ import { Controller, Post, Body, UseGuards, Get, Request, Param, NotFoundExcepti
 import { GruposService } from './grupos.service';
 import { CreateGrupoDto } from './dto/create-grupo.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('grupos')
 @Controller('grupos')
 export class GruposController {
   constructor(private readonly gruposService: GruposService) {}

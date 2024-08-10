@@ -4,7 +4,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('usuarios')
 @Controller('usuarios')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
