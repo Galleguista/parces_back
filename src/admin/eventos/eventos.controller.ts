@@ -13,11 +13,13 @@ export class EventosController {
     return this.eventosService.createEvento(createEventoDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAllEventos() {
     return this.eventosService.getAllEventos();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':eventoId')
   async getEventoById(@Param('eventoId') eventoId: string) {
     return this.eventosService.getEventoById(eventoId);

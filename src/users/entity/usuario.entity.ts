@@ -24,7 +24,7 @@ export class Usuario {
   @Column({ length: 50 })
   status: string;
 
-  @Column({ type: 'uuid', default: () => 'uuid_generate_v4()' })
+  @Column()
   codigoreferencia: string;
 
   @Column('text', { nullable: true })

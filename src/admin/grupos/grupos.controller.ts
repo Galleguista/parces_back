@@ -34,6 +34,7 @@ export class GruposController {
     return this.gruposService.addMemberToGroup(grupoId, usuarioId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.gruposService.getGrupos();

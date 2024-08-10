@@ -30,11 +30,13 @@ export class RecursosController {
     return this.recursosService.createRecurso({ ...createRecursoDto, pdf_url });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAllRecursos() {
     return this.recursosService.getAllRecursos();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':recursoId')
   async getRecursoById(@Param('recursoId') recursoId: string) {
     return this.recursosService.getRecursoById(recursoId);

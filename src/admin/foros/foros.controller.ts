@@ -13,11 +13,13 @@ export class ForosController {
     return this.forosService.createForo(body.nombre, body.descripcion);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAllForos() {
     return this.forosService.getAllForos();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':foroId')
   async getForoById(@Param('foroId') foroId: string) {
     return this.forosService.getForoById(foroId);

@@ -13,6 +13,7 @@ export class ProyectoController {
     return this.proyectoService.createProyecto(createProyectoDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAll() {
     return this.proyectoService.getAllProyectos();

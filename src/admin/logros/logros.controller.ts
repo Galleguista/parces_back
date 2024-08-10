@@ -13,6 +13,7 @@ export class LogrosController {
     return this.logrosService.unlockLogro(usuarioId, logroId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('usuario/:usuarioId')
   async getLogrosByUsuarioId(@Param('usuarioId') usuarioId: string) {
     return this.logrosService.getLogrosByUsuarioId(usuarioId);

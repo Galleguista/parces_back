@@ -22,6 +22,7 @@ export class MuroController {
     return this.muroService.createPublicacion(createPublicacionDto, usuarioId);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('publicaciones')
   async findAll() {
     return this.muroService.findAllPublicaciones();
