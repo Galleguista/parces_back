@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('publicacion')
+@Entity('publicacion', { schema: 'admin' })
 export class Publicacion {
   @PrimaryGeneratedColumn('uuid')
   publicacion_id: string;

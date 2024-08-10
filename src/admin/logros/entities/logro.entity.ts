@@ -2,7 +2,7 @@ import { Usuario } from 'src/users/entity/usuario.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 
-@Entity('logro')
+@Entity('logro', { schema: 'admin' })
 export class Logro {
   @PrimaryGeneratedColumn('uuid')
   logro_id: string;

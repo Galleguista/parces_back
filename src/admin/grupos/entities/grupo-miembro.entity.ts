@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { Grupo } from './grupo.entity';
 import { Usuario } from 'src/users/entity/usuario.entity';
 
-@Entity('grupo_miembro')
+@Entity('grupo_miembro', { schema: 'admin' })
 export class GrupoMiembro {
   @PrimaryGeneratedColumn('uuid')
   grupo_miembro_id: string;

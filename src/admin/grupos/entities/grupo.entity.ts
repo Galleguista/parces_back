@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { GrupoMiembro } from './grupo-miembro.entity';
 
-@Entity('grupos')
+@Entity('grupos', { schema: 'admin' })
 export class Grupo {
   @PrimaryGeneratedColumn('uuid')
   grupo_id: string;

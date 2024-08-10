@@ -1,7 +1,7 @@
 import { Chat } from 'src/admin/chat/entities/chat.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
 
-@Entity('usuario')
+@Entity('usuario', { schema: 'admin' })
 export class Usuario {
   @PrimaryGeneratedColumn('uuid')
   usuario_id: string;

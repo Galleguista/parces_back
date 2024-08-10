@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMan
 import { Usuario } from 'src/users/entity/usuario.entity';
 import { Mensaje } from 'src/admin/chat/mensaje/entities/mensaje.entity';
 
-@Entity('chat')
+@Entity('chats', { schema: 'admin' })
 export class Chat {
   @PrimaryGeneratedColumn('uuid')
   chat_id: string;
