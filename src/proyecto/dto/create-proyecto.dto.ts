@@ -28,7 +28,7 @@ export class CreateProyectoDto {
   beneficios_aparcero?: string;
   condiciones_proyecto?: string;
   criterios_seleccion?: string;
-  numero_participantes?: number;
+  ºero_participantes?: string;
   lista_recursos?: string;
   responsabilidades_aparcero?: string;
   colaboradores_buscados?: string;

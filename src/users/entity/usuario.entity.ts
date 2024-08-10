@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Chat } from 'src/admin/chat/entities/chat.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
 
 @Entity('usuario')
 export class Usuario {
@@ -31,4 +32,7 @@ export class Usuario {
 
   @Column({ type: 'bytea', nullable: true })
   avatar: Buffer;
+
+  @ManyToMany(() => Chat, chat => chat.usuarios)
+  chats: Chat[];
 }

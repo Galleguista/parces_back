@@ -9,7 +9,7 @@ import { MuroModule } from './admin/muro/muro.module';
 import { ProfileModule } from './admin/profile/profile.module';
 import { ChatModule } from './admin/chat/chat.module';
 import { GruposModule } from './admin/grupos/grupos.module';
-import { RecursoModule } from './admin/recurso/recurso.module';
+import { RecursosModule } from './admin/recurso/recurso.module';
 import { LogrosModule } from './admin/logros/logros.module';
 import { ForosModule } from './admin/foros/foros.module';
 import { EventosModule } from './admin/eventos/eventos.module';
@@ -43,7 +43,7 @@ import { AmigosModule } from './admin/chat/amigos/amigos.module';
     ProfileModule,
     ChatModule,
     GruposModule,
-    RecursoModule,
+    RecursosModule,
     LogrosModule,
     ForosModule,
     EventosModule,

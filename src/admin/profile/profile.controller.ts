@@ -8,14 +8,14 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get('me')
   async getProfile(@Request() req) {
     const usuarioId: string = req.user.usuario_id;
     return this.profileService.getProfile(usuarioId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put()
+  @Put('me')
   async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
     const usuarioId: string = req.user.usuario_id;
     return this.profileService.updateProfile(usuarioId, updateProfileDto);

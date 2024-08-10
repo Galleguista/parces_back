@@ -10,10 +10,9 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
-
 import { MensajeService } from './mensaje/mensaje.service';
 import { CreateMensajeDto } from './dto/create-mensage.dto';
+
 
 @WebSocketGateway()
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -39,19 +38,37 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendMessage')
   async handleSendMessage(@MessageBody() createMensajeDto: CreateMensajeDto, @ConnectedSocket() client: Socket) {
     const usuarioId: string = client.handshake.query.usuario_id as string;
-    createMensajeDto.usuario_id = usuarioId;
+    console.log('Client handshake query:', client.handshake.query);  // Añadir log
+    createMensajeDto.usuario_id = usuarioId;  
+
+    console.log('Sending message:', createMensajeDto);  // Añadir log
+
+    if (!createMensajeDto.usuario_id) {
+      throw new Error('usuario_id es nulo o indefinido');
+    }
+
     const mensaje = await this.mensajeService.createMensaje(createMensajeDto);
-    this.server.to(createMensajeDto.receptor_id).emit('receiveMessage', mensaje);
+    this.server.to(createMensajeDto.chat_id).emit('receiveMessage', mensaje);
     return mensaje;
   }
 
   @SubscribeMessage('sendGroupMessage')
   async handleSendGroupMessage(@MessageBody() createMensajeDto: CreateMensajeDto, @ConnectedSocket() client: Socket) {
     const usuarioId: string = client.handshake.query.usuario_id as string;
+    console.log('Client handshake query:', client.handshake.query);  // Añadir log
     createMensajeDto.usuario_id = usuarioId;
-    const mensaje = await this.mensajeService.createMensaje(createMensajeDto);
-    this.server.to(createMensajeDto.chat_id).emit('receiveGroupMessage', mensaje);
-    return mensaje;
+
+    console.log('Sending group message:', createMensajeDto);  // Añadir log
+
+    if (!createMensajeDto.usuario_id) {
+      throw new Error('usuario_id es nulo o indefinido');
+    }
+
+    const mensajes = await this.mensajeService.createGroupMensaje(createMensajeDto);
+    for (const mensaje of mensajes) {
+      this.server.to(mensaje.chat_id).emit('receiveGroupMessage', mensaje);
+    }
+    return mensajes;
   }
 
   @SubscribeMessage('joinGroup')

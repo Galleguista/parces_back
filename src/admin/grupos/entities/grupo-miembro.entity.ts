@@ -7,13 +7,13 @@ export class GrupoMiembro {
   @PrimaryGeneratedColumn('uuid')
   grupo_miembro_id: string;
 
-  @ManyToOne(() => Grupo, (grupo) => grupo.miembros)
+  @ManyToOne(() => Grupo, (grupo) => grupo.miembros, { onDelete: 'CASCADE' })
   grupo: Grupo;
 
   @Column()
   grupo_id: string;
 
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, { onDelete: 'CASCADE' })
   usuario: Usuario;
 
   @Column()

@@ -5,11 +5,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@Controller('users')
+@Controller('usuarios')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
+ 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
@@ -46,5 +46,11 @@ export class UsersController {
       };
     }
     return updatedUser;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getAllUsers() {
+    return this.usersService.findAll();
   }
 }

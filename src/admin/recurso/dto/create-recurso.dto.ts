@@ -1,7 +1,18 @@
+import { IsString, IsOptional } from 'class-validator';
+
 export class CreateRecursoDto {
-    nombre: string;
-    descripcion?: string;
-    imagen_url?: string;
-    pdf_url: string;
-  }
-  
+  @IsString()
+  nombre: string;
+
+  @IsString()
+  @IsOptional()
+  descripcion?: string;
+
+  @IsString()
+  @IsOptional()
+  imagen_url?: string;
+
+  @IsString()
+  @IsOptional()
+  pdf_url?: string; 
+}

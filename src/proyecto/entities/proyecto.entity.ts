@@ -93,7 +93,7 @@ export class Proyecto {
   criterios_seleccion: string;
 
   @Column('int', { nullable: true })
-  numero_participantes: number;
+  numero_participantes: string;
 
   @Column('text', { nullable: true })
   lista_recursos: string;

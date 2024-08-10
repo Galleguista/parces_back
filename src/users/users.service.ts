@@ -21,6 +21,10 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { usuario_id } });
   }
 
+  async findAll(): Promise<Usuario[]> {
+    return this.usersRepository.find();
+  }
+
   async createUser(createUserDto: CreateUserDto): Promise<Usuario> {
     const { password, ...userData } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);

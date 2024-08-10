@@ -1,6 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+// chat.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
+import { Usuario } from 'src/users/entity/usuario.entity';
+import { Mensaje } from 'src/admin/chat/mensaje/entities/mensaje.entity';
 
-@Entity('chats')
+@Entity('chat')
 export class Chat {
   @PrimaryGeneratedColumn('uuid')
   chat_id: string;
@@ -8,12 +11,10 @@ export class Chat {
   @Column({ nullable: true })
   grupo_id: string;
 
-  @Column({ nullable: true })
-  contenido: string;
+  @ManyToMany(() => Usuario)
+  @JoinTable()
+  usuarios: Usuario[];
 
-  @Column({ nullable: true })
-  imagen_url: string;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  fecha_envio: Date;
+  @OneToMany(() => Mensaje, mensaje => mensaje.chat)
+  mensajes: Mensaje[];
 }
