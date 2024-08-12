@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Chat } from 'src/admin/chat/entities/chat.entity';
 import { Usuario } from 'src/users/entity/usuario.entity';
 
-@Entity('mensaje')
+@Entity('mensajes', { schema: 'admin' })
 export class Mensaje {
   @PrimaryGeneratedColumn('uuid')
   mensaje_id: string;

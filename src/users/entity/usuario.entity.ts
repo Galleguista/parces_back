@@ -1,5 +1,5 @@
 import { Chat } from 'src/admin/chat/entities/chat.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, Generated } from 'typeorm';
 
 @Entity('usuario', { schema: 'admin' })
 export class Usuario {
@@ -24,15 +24,9 @@ export class Usuario {
   @Column({ length: 50 })
   status: string;
 
-  @Column()
-  codigoreferencia: string;
-
   @Column('text', { nullable: true })
   direccion: string;
 
   @Column({ type: 'bytea', nullable: true })
   avatar: Buffer;
-
-  @ManyToMany(() => Chat, chat => chat.usuarios)
-  chats: Chat[];
 }
