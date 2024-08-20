@@ -20,39 +20,41 @@ export class GruposService {
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
-  async createGrupo(createGrupoDto: CreateGrupoDto, usuarioIds: string[]): Promise<Grupo> {
-    const grupo = this.grupoRepository.create(createGrupoDto);
-    await this.grupoRepository.save(grupo);
+  // grupos.service.ts
+async createGrupo(createGrupoDto: CreateGrupoDto, usuarioId: string): Promise<Grupo> {
+  const grupo = this.grupoRepository.create(createGrupoDto);
+  await this.grupoRepository.save(grupo);
 
-    // Verificación de usuarios
-    const usuariosEntidades = await this.usuarioRepository.findByIds(usuarioIds);
-    if (usuariosEntidades.length !== usuarioIds.length) {
-      const foundIds = usuariosEntidades.map(usuario => usuario.usuario_id);
-      const missingIds = usuarioIds.filter(id => !foundIds.includes(id));
-      console.error('Usuarios no encontrados:', missingIds); // Log de depuración
-      throw new NotFoundException('Algunos usuarios no fueron encontrados');
-    }
-
-    // Creación del chat grupal
-    const chat = this.chatRepository.create({
-      grupo_id: grupo.grupo_id,
-      usuarios: usuariosEntidades,
-    });
-
-    await this.chatRepository.save(chat);
-
-    // Asignación de miembros al grupo
-    for (const usuario of usuariosEntidades) {
-      const grupoMiembro = this.grupoMiembroRepository.create({
-        grupo_id: grupo.grupo_id,
-        usuario_id: usuario.usuario_id,
-        usuario: usuario,
-      });
-      await this.grupoMiembroRepository.save(grupoMiembro);
-    }
-
-    return grupo;
+  // Obtener el usuario creador y verificar su existencia
+  const usuarioCreador = await this.usuarioRepository.findOne({ where: { usuario_id: usuarioId } });
+  if (!usuarioCreador) {
+    throw new NotFoundException(`Creador del grupo no encontrado: ${usuarioId}`);
   }
+
+  // Asegurar que el usuario creador esté incluido en los miembros del grupo
+  const usuariosIds = [usuarioId, ...createGrupoDto.usuariosIds];
+  const usuariosEntidades = await this.usuarioRepository.findByIds(usuariosIds);
+
+  // Creación del chat grupal
+  const chat = this.chatRepository.create({
+    grupo_id: grupo.grupo_id,
+    usuarios: usuariosEntidades,
+  });
+  await this.chatRepository.save(chat);
+
+  // Asignación de miembros al grupo
+  usuariosEntidades.forEach(async usuario => {
+    const grupoMiembro = this.grupoMiembroRepository.create({
+      grupo_id: grupo.grupo_id,
+      usuario_id: usuario.usuario_id,
+      usuario,
+    });
+    await this.grupoMiembroRepository.save(grupoMiembro);
+  });
+
+  return grupo;
+}
+
 
   async addMemberToGroup(grupoId: string, usuarioId: string): Promise<GrupoMiembro> {
     console.log(`addMemberToGroup: grupoId=${grupoId}, usuarioId=${usuarioId}`); // Log de depuración

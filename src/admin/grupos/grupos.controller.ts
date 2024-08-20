@@ -9,24 +9,20 @@ import { ApiTags } from '@nestjs/swagger';
 export class GruposController {
   constructor(private readonly gruposService: GruposService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Post('create')
-  async create(@Body() createGrupoDto: CreateGrupoDto, @Body('usuarios') usuarioIds: string[], @Request() req) {
-    const usuarioId = req.user.sub;
-
-    // Verificar que usuarioId no sea undefined antes de añadirlo
-    if (!usuarioId) {
-      console.error('El usuarioId del creador del grupo es undefined');
-      throw new NotFoundException('No se pudo identificar al creador del grupo');
-    }
-
-    if (!usuarioIds.includes(usuarioId)) {
-      usuarioIds.push(usuarioId);
-    }
-
-    console.log(`Creating group: usuarioId=${usuarioId}, usuarioIds=${usuarioIds}`);
-    return this.gruposService.createGrupo(createGrupoDto, usuarioIds);
+// grupos.controller.ts
+@UseGuards(JwtAuthGuard)
+@Post('create')
+async create(@Body() createGrupoDto: CreateGrupoDto, @Request() req) {
+  console.log('User Info:', req.user);  // Verifica qué datos están disponibles aquí
+  const usuarioId = req.user.usuario_id; // Ajusta según cómo configuraste la estrategia JWT
+  if (!usuarioId) {
+    throw new NotFoundException('No se pudo identificar al creador del grupo');
   }
+
+  return this.gruposService.createGrupo(createGrupoDto, usuarioId);
+}
+
+
 
   @UseGuards(JwtAuthGuard)
   @Post(':grupoId/miembros')
