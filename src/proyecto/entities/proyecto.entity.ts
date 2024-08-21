@@ -1,3 +1,4 @@
+import { LargeNumberLike } from 'crypto';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('proyecto', { schema: 'admin' })
@@ -93,7 +94,7 @@ export class Proyecto {
   criterios_seleccion: string;
 
   @Column('int', { nullable: true })
-  numero_participantes: string;
+  numero_participantes: number;
 
   @Column('text', { nullable: true })
   lista_recursos: string;
