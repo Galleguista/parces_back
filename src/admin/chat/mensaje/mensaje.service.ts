@@ -2,54 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Mensaje } from './entities/mensaje.entity';
-import { CreateMensajeDto } from './dto/create-mensaje.dto';
-import { GrupoMiembro } from 'src/admin/grupos/entities/grupo-miembro.entity';
+import { Chat } from '../entities/chat.entity';
+import { Usuario } from 'src/users/entity/usuario.entity';
+
+
 
 @Injectable()
 export class MensajeService {
-  constructor(
-    @InjectRepository(Mensaje)
-    private mensajeRepository: Repository<Mensaje>,
-    @InjectRepository(GrupoMiembro)
-    private grupoMiembroRepository: Repository<GrupoMiembro>,
-  ) {}
+    constructor(
+        @InjectRepository(Mensaje)
+        private mensajeRepository: Repository<Mensaje>,
+        @InjectRepository(Chat)
+        private chatRepository: Repository<Chat>,
+        @InjectRepository(Usuario)
+        private usuarioRepository: Repository<Usuario>,
+    ) {}
 
-  async createMensaje(createMensajeDto: CreateMensajeDto): Promise<Mensaje> {
-    console.log('Creating single message:', createMensajeDto);  // Añadir log
-    if (!createMensajeDto.usuario_id) {
-      throw new Error('usuario_id es nulo o indefinido');
+    async sendMessage(chatId: string, usuarioId: string, contenido: string): Promise<Mensaje> {
+        const chat = await this.chatRepository.findOne({ where: { chat_id: chatId } });
+        const usuario = await this.usuarioRepository.findOne({ where: { usuario_id: usuarioId } });
+        const mensaje = this.mensajeRepository.create({ chat, usuario, contenido });
+        return this.mensajeRepository.save(mensaje);
     }
 
-    const newMensaje = this.mensajeRepository.create(createMensajeDto);
-    return this.mensajeRepository.save(newMensaje);
-  }
-
-  async createGroupMensaje(createMensajeDto: CreateMensajeDto): Promise<Mensaje[]> {
-    console.log('Creating group message:', createMensajeDto);  // Añadir log
-    if (!createMensajeDto.usuario_id) {
-      throw new Error('usuario_id es nulo o indefinido');
+    async getMessage(mensajeId: string): Promise<Mensaje> {
+        return this.mensajeRepository.findOne({ where: { mensaje_id: mensajeId }, relations: ['chat', 'usuario'] });
     }
-
-    const newMensajes: Mensaje[] = [];
-    const grupoMiembros = await this.grupoMiembroRepository.find({
-      where: { grupo_id: createMensajeDto.chat_id },
-    });
-
-    for (const miembro of grupoMiembros) {
-      const newMensaje = this.mensajeRepository.create({
-        ...createMensajeDto,
-        usuario_id: miembro.usuario_id,
-      });
-      newMensajes.push(await this.mensajeRepository.save(newMensaje));
-    }
-
-    return newMensajes;
-  }
-
-  async getMensajes(chatId: string): Promise<Mensaje[]> {
-    return this.mensajeRepository.find({
-      where: { chat_id: chatId },
-      order: { fecha_envio: 'ASC' },
-    });
-  }
 }

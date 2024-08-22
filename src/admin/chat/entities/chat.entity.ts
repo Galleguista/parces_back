@@ -1,20 +1,15 @@
-// chat.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
-import { Usuario } from 'src/users/entity/usuario.entity';
-import { Mensaje } from 'src/admin/chat/mensaje/entities/mensaje.entity';
+import { Grupo } from 'src/admin/grupos/entities/grupo.entity';
+import { Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Mensaje } from '../mensaje/entities/mensaje.entity';
 
 @Entity('chats', { schema: 'admin' })
 export class Chat {
-  @PrimaryGeneratedColumn('uuid')
-  chat_id: string;
+    @PrimaryGeneratedColumn('uuid')
+    chat_id: string;
 
-  @Column({ nullable: true })
-  grupo_id: string;
+    @ManyToOne(() => Grupo, grupo => grupo.chats, { nullable: true, onDelete: 'CASCADE' })
+    grupo: Grupo;
 
-  @ManyToMany(() => Usuario)
-  @JoinTable()
-  usuarios: Usuario[];
-
-  @OneToMany(() => Mensaje, mensaje => mensaje.chat)
-  mensajes: Mensaje[];
+    @OneToMany(() => Mensaje, mensaje => mensaje.chat)
+    mensajes: Mensaje[];
 }

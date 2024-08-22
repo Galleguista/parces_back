@@ -1,7 +1,15 @@
-export class CreateMensajeDto {
-  chat_id: string;
-  usuario_id: string;
-  receptor_id: string;
-  contenido?: string;
-  imagen_url?: string;
+import { IsNotEmpty, IsUUID, IsString } from 'class-validator';
+
+export class CreateMessageDto {
+    @IsUUID()
+    @IsNotEmpty()
+    chatId: string;
+
+    @IsUUID()
+    @IsNotEmpty()
+    usuarioId: string;
+
+    @IsString()
+    @IsNotEmpty()
+    contenido: string;
 }

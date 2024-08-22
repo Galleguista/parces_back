@@ -1,22 +1,21 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body } from '@nestjs/common';
 import { MensajeService } from './mensaje.service';
-import { CreateMensajeDto } from './dto/create-mensaje.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-
 
 @Controller('mensaje')
 export class MensajeController {
-  constructor(private readonly mensajeService: MensajeService) {}
+    constructor(private readonly mensajeService: MensajeService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Post('create')
-  async create(@Body() createMensajeDto: CreateMensajeDto) {
-    return this.mensajeService.createMensaje(createMensajeDto);
-  }
+    @Post()
+    sendMessage(
+        @Body('chatId') chatId: string,
+        @Body('usuarioId') usuarioId: string,
+        @Body('contenido') contenido: string,
+    ) {
+        return this.mensajeService.sendMessage(chatId, usuarioId, contenido);
+    }
 
-  @UseGuards(JwtAuthGuard)
-  @Get(':chatId')
-  async getMensajes(@Param('chatId') chatId: string) {
-    return this.mensajeService.getMensajes(chatId);
-  }
+    @Get(':mensajeId')
+    getMessage(@Param('mensajeId') mensajeId: string) {
+        return this.mensajeService.getMessage(mensajeId);
+    }
 }
