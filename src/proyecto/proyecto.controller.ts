@@ -1,23 +1,26 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 
-@ApiTags('proyectos')
 @Controller('proyectos')
 export class ProyectoController {
   constructor(private readonly proyectoService: ProyectoService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post('create')
-  async create(@Body() createProyectoDto: CreateProyectoDto) {
-    return this.proyectoService.createProyecto(createProyectoDto);
+  @UseInterceptors(FileInterceptor('imagen_representativa'))
+  create(@Body() createProyectoDto: CreateProyectoDto, @UploadedFile() imagen_representativa: Express.Multer.File) {
+    return this.proyectoService.create(createProyectoDto, imagen_representativa);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  async getAll() {
-    return this.proyectoService.getAllProyectos();
+  findAll() {
+    return this.proyectoService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.proyectoService.findOne(id);
   }
 }

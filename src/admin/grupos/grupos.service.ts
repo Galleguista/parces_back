@@ -5,7 +5,6 @@ import { Grupo } from './entities/grupo.entity';
 import { GrupoMiembro } from './entities/grupo-miembro.entity';
 import { Usuario } from 'src/users/entity/usuario.entity';
 
-
 @Injectable()
 export class GrupoService {
     constructor(
@@ -31,5 +30,9 @@ export class GrupoService {
         const usuario = await this.usuarioRepository.findOne({ where: { usuario_id: usuarioId } });
         const grupoMiembro = this.grupoMiembroRepository.create({ grupo, usuario });
         return this.grupoMiembroRepository.save(grupoMiembro);
+    }
+
+    async getAllGrupos(): Promise<Grupo[]> {
+        return this.grupoRepository.find({ relations: ['miembros'] });
     }
 }

@@ -1,4 +1,3 @@
-import { LargeNumberLike } from 'crypto';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('proyecto', { schema: 'admin' })
@@ -93,7 +92,7 @@ export class Proyecto {
   @Column('text', { nullable: true })
   criterios_seleccion: string;
 
-  @Column('int', { nullable: true })
+  @Column({ nullable: true })
   numero_participantes: number;
 
   @Column('text', { nullable: true })
@@ -111,8 +110,8 @@ export class Proyecto {
   @Column('date', { nullable: true })
   fecha_de_fin: Date;
 
-  @Column('text', { nullable: true })
-  imagen_representativa: string;
+  @Column({ type: 'bytea', nullable: true })
+  imagen_representativa: Buffer;
 
   @Column('text', { nullable: true })
   documentos_relevantes: string;

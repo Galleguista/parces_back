@@ -1,8 +1,7 @@
 import { Controller, Post, Get, Param, Body } from '@nestjs/common';
 import { GrupoService } from './grupos.service';
 
-
-@Controller('grupo')
+@Controller('grupos')
 export class GrupoController {
     constructor(private readonly grupoService: GrupoService) {}
 
@@ -19,5 +18,10 @@ export class GrupoController {
     @Post(':grupoId/miembro')
     addMiembro(@Param('grupoId') grupoId: string, @Body('usuarioId') usuarioId: string) {
         return this.grupoService.addMiembro(grupoId, usuarioId);
+    }
+
+    @Get()
+    getAllGrupos() {
+        return this.grupoService.getAllGrupos();
     }
 }

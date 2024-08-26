@@ -34,6 +34,6 @@ export class CreateProyectoDto {
   colaboradores_buscados?: string;
   fecha_de_inicio: Date;
   fecha_de_fin?: Date;
-  imagen_representativa?: string;
+  imagen_representativa?: Buffer;
   documentos_relevantes?: string;
 }
