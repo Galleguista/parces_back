@@ -3,5 +3,5 @@ export class UpdateProfileDto {
   correo_electronico?: string;
   celular?: string;
   direccion?: string;
-  avatar?: string;
+  avatar?: Buffer;
 }
