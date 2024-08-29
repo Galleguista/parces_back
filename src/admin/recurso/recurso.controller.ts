@@ -1,37 +1,33 @@
-import { Controller, Post, Body, Get, Param, Delete, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateRecursoDto } from './dto/create-recurso.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { multerConfig } from 'src/multer.config';
 import { RecursosService } from './recurso.service';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 
+import { ApiTags } from '@nestjs/swagger';
+import { multerConfig } from 'src/multer.config';
+
+@ApiTags('recursos')
 @Controller('recursos')
 export class RecursosController {
   constructor(private readonly recursosService: RecursosService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post('create')
-  @UseInterceptors(FileInterceptor('pdf', {
-    storage: diskStorage({
-      destination: './uploads/pdf',
-      filename: (req, file, callback) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = extname(file.originalname);
-        callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-      },
-    }),
-  }))
-  async createRecurso(@UploadedFile() pdf: Express.Multer.File, @Body() createRecursoDto: CreateRecursoDto) {
-    console.log('PDF:', pdf);
-    console.log('DTO:', createRecursoDto);
-    const pdf_url = pdf ? `/uploads/pdf/${pdf.filename}` : null;
-    if (!pdf_url) {
-      throw new Error('PDF file is required');
+  @UseInterceptors(FileInterceptor('file', multerConfig(['application/pdf', 'image/jpeg', 'image/png'])))
+  async createRecurso(@UploadedFile() file: Express.Multer.File, @Body() createRecursoDto: CreateRecursoDto) {
+    let imagen_url: string | null = null;
+    let pdf_url: string | null = null;
+
+    if (file.mimetype.includes('image')) {
+      imagen_url = `/uploads/${file.path.split('/uploads/')[1]}`;
+    } else if (file.mimetype.includes('pdf')) {
+      pdf_url = `/uploads/${file.path.split('/uploads/')[1]}`;
     }
-    return this.recursosService.createRecurso({ ...createRecursoDto, pdf_url });
+
+    return this.recursosService.createRecurso({ ...createRecursoDto, imagen_url, pdf_url });
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async getAllRecursos() {
