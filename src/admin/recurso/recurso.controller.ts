@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Get, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Post, Body, Get, Param, Delete, UseGuards, UploadedFile, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { CreateRecursoDto } from './dto/create-recurso.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RecursosService } from './recurso.service';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+
 import { ApiTags } from '@nestjs/swagger';
+import { multerConfig } from 'src/multer.config';
 
 @ApiTags('recursos')
 @Controller('recursos')
@@ -14,22 +14,27 @@ export class RecursosController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  @UseInterceptors(FileInterceptor('pdf', {
-    storage: diskStorage({
-      destination: './uploads/pdf',
-      filename: (req, file, callback) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = extname(file.originalname);
-        callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-      },
-    }),
-  }))
-  async createRecurso(@UploadedFile() pdf: Express.Multer.File, @Body() createRecursoDto: CreateRecursoDto) {
-    const pdf_url = pdf ? `/uploads/pdf/${pdf.filename}` : null;
-    if (!pdf_url) {
-      throw new Error('PDF file is required');
-    }
-    return this.recursosService.createRecurso({ ...createRecursoDto, pdf_url });
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'imagen', maxCount: 1 },
+        { name: 'pdf', maxCount: 1 },
+      ],
+      multerConfig(['image/jpeg', 'image/png', 'application/pdf'])
+    )
+  )
+  async createRecurso(@UploadedFiles() files, @Body() createRecursoDto: CreateRecursoDto) {
+    const imagen = files?.imagen?.[0];
+    const pdf = files?.pdf?.[0];
+
+    const imagen_url = imagen ? `/uploads/${imagen.filename}` : null;
+    const pdf_url = pdf ? `/uploads/${pdf.filename}` : null;
+
+    return this.recursosService.createRecurso({
+      ...createRecursoDto,
+      imagen_url,
+      pdf_url,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
