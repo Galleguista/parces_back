@@ -11,11 +11,37 @@ import { ApiTags } from '@nestjs/swagger';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
- 
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
+    try {
+      // Verificar si el correo ya existe
+      const existingUser = await this.usersService.findByEmail(createUserDto.correo_electronico);
+      if (existingUser) {
+        return {
+          success: false,
+          message: 'El correo electrónico ya está registrado.',
+        };
+      }
+  
+      // Registrar al usuario
+      createUserDto.status = 'true'; // Asignamos "true" por defecto para status
+      const newUser = await this.usersService.createUser(createUserDto);
+  
+      return {
+        success: true,
+        message: 'Usuario registrado correctamente.',
+        newUser,
+      };
+    } catch (error) {
+      // Manejar cualquier error que ocurra durante el registro
+      console.error('Error durante el registro:', error);
+      return {
+        success: false,
+        message: 'Error interno del servidor. Intente nuevamente.',
+      };
+    }
   }
+  
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
