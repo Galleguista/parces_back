@@ -1,7 +1,6 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Query } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-mensage.dto';
-
 
 @Controller('chat')
 export class ChatController {
@@ -18,8 +17,12 @@ export class ChatController {
     }
 
     @Get(':chatId/mensajes')
-    getMessages(@Param('chatId') chatId: string) {
-        return this.chatService.getMessages(chatId);
+    getMessages(
+        @Param('chatId') chatId: string,
+        @Query('page') page: number = 1,  
+        @Query('limit') limit: number = 10,
+    ) {
+        return this.chatService.getMessages(chatId, page, limit);
     }
 
     @Post(':chatId/messages')
