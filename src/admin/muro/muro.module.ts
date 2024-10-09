@@ -4,6 +4,7 @@ import { MuroService } from './muro.service';
 import { MuroController } from './muro.controller';
 import { Publicacion } from './entities/publicacion.entity';
 import { UsersModule } from 'src/users/users.module';
+import { FilesService } from 'src/system/files/files.service';
 
 
 @Module({
@@ -11,7 +12,7 @@ import { UsersModule } from 'src/users/users.module';
     TypeOrmModule.forFeature([Publicacion]),
     UsersModule,
   ],
-  providers: [MuroService],
+  providers: [MuroService, FilesService],
   controllers: [MuroController],
 })
 export class MuroModule {}

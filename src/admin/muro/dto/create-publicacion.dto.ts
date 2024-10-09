@@ -1,4 +1,4 @@
 export class CreatePublicacionDto {
   contenido: string;
-  imagen_url?: Buffer;
+  imagen_url?: string;
 }

@@ -18,5 +18,6 @@ export class UpdateUserDto {
   direccion?: string;
 
   @IsOptional()
-  avatar?: Buffer;
+  @IsString()
+  avatar?: string;
 }

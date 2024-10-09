@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Publicacion } from './entities/publicacion.entity';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UsersService } from 'src/users/users.service';
+import { FilesService } from 'src/system/files/files.service';
 
 
 @Injectable()
@@ -12,52 +13,51 @@ export class MuroService {
     @InjectRepository(Publicacion)
     private publicacionRepository: Repository<Publicacion>,
     private usersService: UsersService,
+    private filesService: FilesService, 
   ) {}
 
-  async createPublicacion(createPublicacionDto: CreatePublicacionDto, usuarioId: string): Promise<any> {
+  async createPublicacion(createPublicacionDto: CreatePublicacionDto, usuarioId: string, imagen?: Express.Multer.File): Promise<any> {
     const newPublicacion = this.publicacionRepository.create({ ...createPublicacionDto, usuario_id: usuarioId });
-  
-    // Convertir la imagen a Buffer si está presente
-    if (createPublicacionDto.imagen_url) {
-      newPublicacion.imagen_url = Buffer.from(createPublicacionDto.imagen_url);
+
+    if (imagen) {
+      const imagenPath = await this.filesService.handleFileUpload(imagen, { user: { usuario_id: usuarioId } });
+      newPublicacion.imagen_url = imagenPath.relativePath;
     }
-  
+
     const savedPublicacion = await this.publicacionRepository.save(newPublicacion);
-  
-    // Obtener los detalles del usuario
+
     const usuario = await this.usersService.findById(usuarioId);
     const usuarioInfo = usuario ? {
       nombre: usuario.nombre || 'Anonymous',
-      avatar: usuario.avatar ? usuario.avatar.toString('base64') : null,
+      avatar: usuario.avatar ? this.filesService.getFileUrl(usuario.avatar) : null,
     } : {
       nombre: 'Anonymous',
       avatar: null,
     };
-  
+
     return {
       ...savedPublicacion,
       usuario: usuarioInfo,
-      imagen_url: savedPublicacion.imagen_url ? savedPublicacion.imagen_url.toString('base64') : null,
+      imagen_url: typeof savedPublicacion.imagen_url === 'string' ? this.filesService.getFileUrl(savedPublicacion.imagen_url) : null, // Aseguramos que es string antes de procesar
     };
   }
-  
 
   async findAllPublicaciones(): Promise<any[]> {
     const publicaciones = await this.publicacionRepository.find({ order: { fecha_publicacion: 'DESC' } });
 
-    // Convertir el buffer de imagen a base64 y agregar detalles del usuario
     const publicacionesConUsuario = await Promise.all(publicaciones.map(async (publicacion) => {
       const usuario = await this.usersService.findById(publicacion.usuario_id);
       const usuarioInfo = usuario ? {
         nombre: usuario.nombre || 'Anonymous',
-        avatar: usuario.avatar ? usuario.avatar.toString('base64') : null,
+        avatar: usuario.avatar ? this.filesService.getFileUrl(usuario.avatar) : null, // Convertimos la ruta del avatar en una URL
       } : {
         nombre: 'Anonymous',
         avatar: null,
       };
+
       return {
         ...publicacion,
-        imagen_url: publicacion.imagen_url ? publicacion.imagen_url.toString('base64') : null,
+        imagen_url: typeof publicacion.imagen_url === 'string' ? this.filesService.getFileUrl(publicacion.imagen_url) : null, // Aseguramos que es string antes de procesar
         usuario: usuarioInfo,
       };
     }));

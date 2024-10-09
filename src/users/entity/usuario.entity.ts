@@ -28,8 +28,8 @@ export class Usuario {
     @Column({ type: 'text', nullable: true })
     direccion: string;
 
-    @Column({ type: 'bytea', nullable: true })
-    avatar: Buffer;
+    @Column({ nullable: true })
+    avatar: string;
 
     @OneToMany(() => Mensaje, mensaje => mensaje.usuario)
     mensajes: Mensaje[];

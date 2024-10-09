@@ -14,6 +14,8 @@ import { LogrosModule } from './admin/logros/logros.module';
 import { ForosModule } from './admin/foros/foros.module';
 import { EventosModule } from './admin/eventos/eventos.module';
 import { AmigosModule } from './admin/chat/amigos/amigos.module';
+import { FilesModule } from './system/files/files.module';
+import { NotificationsModule } from './system/notifications/notifications.module';
 
 
 @Module({
@@ -48,6 +50,8 @@ import { AmigosModule } from './admin/chat/amigos/amigos.module';
     ForosModule,
     EventosModule,
     AmigosModule,
+    FilesModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

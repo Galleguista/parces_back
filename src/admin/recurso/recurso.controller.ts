@@ -12,30 +12,30 @@ import { multerConfig } from 'src/multer.config';
 export class RecursosController {
   constructor(private readonly recursosService: RecursosService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Post('create')
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'imagen', maxCount: 1 },
-        { name: 'pdf', maxCount: 1 },
-      ],
-      multerConfig(['image/jpeg', 'image/png', 'application/pdf'])
-    )
-  )
-  async createRecurso(@UploadedFiles() files, @Body() createRecursoDto: CreateRecursoDto) {
-    const imagen = files?.imagen?.[0];
-    const pdf = files?.pdf?.[0];
+  // @UseGuards(JwtAuthGuard)
+  // @Post('create')
+  // @UseInterceptors(
+  //   FileFieldsInterceptor(
+  //     [
+  //       { name: 'imagen', maxCount: 1 },
+  //       { name: 'pdf', maxCount: 1 },
+  //     ],
+  //     multerConfig(['image/jpeg', 'image/png', 'application/pdf'])
+  //   )
+  // )
+  // async createRecurso(@UploadedFiles() files, @Body() createRecursoDto: CreateRecursoDto) {
+  //   const imagen = files?.imagen?.[0];
+  //   const pdf = files?.pdf?.[0];
 
-    const imagen_url = imagen ? `/uploads/${imagen.filename}` : null;
-    const pdf_url = pdf ? `/uploads/${pdf.filename}` : null;
+  //   const imagen_url = imagen ? `/uploads/${imagen.filename}` : null;
+  //   const pdf_url = pdf ? `/uploads/${pdf.filename}` : null;
 
-    return this.recursosService.createRecurso({
-      ...createRecursoDto,
-      imagen_url,
-      pdf_url,
-    });
-  }
+  //   return this.recursosService.createRecurso({
+  //     ...createRecursoDto,
+  //     imagen_url,
+  //     pdf_url,
+  //   });
+  // }
 
   @UseGuards(JwtAuthGuard)
   @Get()
