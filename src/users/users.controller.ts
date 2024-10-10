@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -13,7 +13,7 @@ import { FilesService } from 'src/system/files/files.service';
 @Controller('usuarios')
 export class UsersController {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly usersService: UserService,
     private readonly filesService: FilesService, // Añadimos el servicio de archivos
   ) {}
 
@@ -34,15 +34,13 @@ export class UsersController {
       }
 
       createUserDto.status = 'true';
-
-      // Si hay un archivo, subimos la imagen y obtenemos la ruta
       let avatarPath = '';
       if (file) {
         const uploadResult = await this.filesService.handleFileUpload(file, req);
-        avatarPath = uploadResult.relativePath; // Guardamos la ruta de la imagen
+        avatarPath = uploadResult.relativePath; 
       }
 
-      const newUser = await this.usersService.createUser(createUserDto, avatarPath);
+      const newUser = await this.usersService.create(createUserDto);
       return {
         success: true,
         message: 'Usuario registrado correctamente.',
@@ -59,7 +57,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Put('me')
-  @UseInterceptors(FileInterceptor('avatar', multerConfig())) // Interceptor para subir archivos
+  @UseInterceptors(FileInterceptor('avatar', multerConfig())) 
   async updateProfile(
     @Request() req: any,
     @UploadedFile() file: Express.Multer.File, 
@@ -67,15 +65,15 @@ export class UsersController {
   ) {
     const userId = req.user.usuario_id;
 
-    // Si se subió una nueva imagen, guardamos la ruta
+    
     let avatarPath = '';
     if (file) {
       const uploadResult = await this.filesService.handleFileUpload(file, req);
       avatarPath = uploadResult.relativePath;
     }
 
-    await this.usersService.update(userId, updateUserDto, avatarPath);
-    const updatedUser = await this.usersService.findById(userId);
+    await this.usersService.update(userId, updateUserDto, );
+    const updatedUser = await this.usersService.findOne(userId);
 
     return updatedUser;
   }
@@ -84,12 +82,12 @@ export class UsersController {
   @Get('me')
   async getMe(@Request() req: any) {
     const userId = req.user.usuario_id;
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findOne(userId);
 
     if (user.avatar) {
       return {
         ...user,
-        avatar: this.filesService.getFileUrl(user.avatar), // Transformamos la ruta en una URL accesible
+        avatar: this.filesService.getFileUrl(user.avatar), 
       };
     }
     return user;

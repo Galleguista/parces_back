@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Publicacion } from './entities/publicacion.entity';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
-import { UsersService } from 'src/users/users.service';
+import { UserService } from 'src/users/users.service';
 import { FilesService } from 'src/system/files/files.service';
 
 
@@ -12,7 +12,7 @@ export class MuroService {
   constructor(
     @InjectRepository(Publicacion)
     private publicacionRepository: Repository<Publicacion>,
-    private usersService: UsersService,
+    private usersService: UserService,
     private filesService: FilesService, 
   ) {}
 
@@ -26,7 +26,7 @@ export class MuroService {
 
     const savedPublicacion = await this.publicacionRepository.save(newPublicacion);
 
-    const usuario = await this.usersService.findById(usuarioId);
+    const usuario = await this.usersService.findOne(usuarioId);
     const usuarioInfo = usuario ? {
       nombre: usuario.nombre || 'Anonymous',
       avatar: usuario.avatar ? this.filesService.getFileUrl(usuario.avatar) : null,
@@ -38,7 +38,7 @@ export class MuroService {
     return {
       ...savedPublicacion,
       usuario: usuarioInfo,
-      imagen_url: typeof savedPublicacion.imagen_url === 'string' ? this.filesService.getFileUrl(savedPublicacion.imagen_url) : null, // Aseguramos que es string antes de procesar
+      imagen_url: typeof savedPublicacion.imagen_url === 'string' ? this.filesService.getFileUrl(savedPublicacion.imagen_url) : null, 
     };
   }
 
@@ -46,10 +46,10 @@ export class MuroService {
     const publicaciones = await this.publicacionRepository.find({ order: { fecha_publicacion: 'DESC' } });
 
     const publicacionesConUsuario = await Promise.all(publicaciones.map(async (publicacion) => {
-      const usuario = await this.usersService.findById(publicacion.usuario_id);
+      const usuario = await this.usersService.findOne(publicacion.usuario_id);
       const usuarioInfo = usuario ? {
         nombre: usuario.nombre || 'Anonymous',
-        avatar: usuario.avatar ? this.filesService.getFileUrl(usuario.avatar) : null, // Convertimos la ruta del avatar en una URL
+        avatar: usuario.avatar ? this.filesService.getFileUrl(usuario.avatar) : null,
       } : {
         nombre: 'Anonymous',
         avatar: null,
@@ -57,7 +57,7 @@ export class MuroService {
 
       return {
         ...publicacion,
-        imagen_url: typeof publicacion.imagen_url === 'string' ? this.filesService.getFileUrl(publicacion.imagen_url) : null, // Aseguramos que es string antes de procesar
+        imagen_url: typeof publicacion.imagen_url === 'string' ? this.filesService.getFileUrl(publicacion.imagen_url) : null, 
         usuario: usuarioInfo,
       };
     }));
