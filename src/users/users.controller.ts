@@ -4,21 +4,20 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/multer.config'; // Configuración de Multer
+import { multerConfig } from 'src/multer.config'; 
 import { ApiTags } from '@nestjs/swagger';
 import { FilesService } from 'src/system/files/files.service';
-
 
 @ApiTags('usuarios')
 @Controller('usuarios')
 export class UsersController {
   constructor(
     private readonly usersService: UserService,
-    private readonly filesService: FilesService, // Añadimos el servicio de archivos
+    private readonly filesService: FilesService, 
   ) {}
 
   @Post('register')
-  @UseInterceptors(FileInterceptor('avatar', multerConfig())) // Interceptor para subir archivos
+  @UseInterceptors(FileInterceptor('avatar', multerConfig())) 
   async register(
     @Body() createUserDto: CreateUserDto,
     @UploadedFile() file: Express.Multer.File, 
@@ -35,9 +34,12 @@ export class UsersController {
 
       createUserDto.status = 'true';
       let avatarPath = '';
+
       if (file) {
         const uploadResult = await this.filesService.handleFileUpload(file, req);
         avatarPath = uploadResult.relativePath; 
+
+        createUserDto.avatar = avatarPath;
       }
 
       const newUser = await this.usersService.create(createUserDto);
@@ -65,14 +67,16 @@ export class UsersController {
   ) {
     const userId = req.user.usuario_id;
 
-    
     let avatarPath = '';
     if (file) {
       const uploadResult = await this.filesService.handleFileUpload(file, req);
       avatarPath = uploadResult.relativePath;
+
+      // Actualizamos el avatar en la base de datos
+      await this.usersService.updateAvatar(userId, avatarPath);
     }
 
-    await this.usersService.update(userId, updateUserDto, );
+    await this.usersService.update(userId, updateUserDto);
     const updatedUser = await this.usersService.findOne(userId);
 
     return updatedUser;

@@ -24,4 +24,8 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   direccion?: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
 }

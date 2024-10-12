@@ -5,7 +5,9 @@ import { createReadStream, existsSync } from 'fs';
 import { join } from 'path';
 import { Response } from 'express';  
 import { multerConfig } from 'src/multer.config';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('archivos')
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
