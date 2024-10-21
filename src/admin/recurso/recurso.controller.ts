@@ -45,25 +45,21 @@ export class RecursosController {
     return recurso;
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Put(':recursoId')
-  @UseInterceptors(FileInterceptor('imagen', multerConfig())) 
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'imagen', maxCount: 1 },
+      { name: 'pdf', maxCount: 1 },
+    ], multerConfig())
+  )
   async updateRecurso(
     @Param('recursoId') recursoId: string,
     @Body() updateRecursoDto: UpdateRecursoDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: { imagen?: Express.Multer.File[], pdf?: Express.Multer.File[] },
     @Request() req: any
   ) {
-    let imagenPath = '';
-
-    if (file) {
-      const uploadResult = await this.filesService.handleFileUpload(file, req);
-      imagenPath = uploadResult.relativePath;
-      updateRecursoDto.imagen_url = imagenPath;
-    }
-
-    const updatedRecurso = await this.recursosService.updateRecurso(recursoId, updateRecursoDto);
+    const updatedRecurso = await this.recursosService.updateRecurso(recursoId, updateRecursoDto, files, req);
     return updatedRecurso;
   }
 
