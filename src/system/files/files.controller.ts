@@ -19,7 +19,7 @@ export class FilesController {
     return { relativePath };
   }
 
-  @Get(':module/:submodule/:subsubmodule/:year/:month/:day/:filename')
+  @Get(':module/:submodule/:year/:month/:day/:filename')
   async getFile(
     @Param('module') module: string,
     @Param('submodule') submodule: string,
