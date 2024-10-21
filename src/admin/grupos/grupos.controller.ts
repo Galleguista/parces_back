@@ -15,11 +15,6 @@ export class GrupoController {
         return this.grupoService.getGrupo(grupoId);
     }
 
-    @Post(':grupoId/miembro')
-    addMiembro(@Param('grupoId') grupoId: string, @Body('usuarioId') usuarioId: string) {
-        return this.grupoService.addMiembro(grupoId, usuarioId);
-    }
-
     @Get()
     getAllGrupos() {
         return this.grupoService.getAllGrupos();
