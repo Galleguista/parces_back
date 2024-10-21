@@ -6,7 +6,6 @@ import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UserService } from 'src/users/users.service';
 import { FilesService } from 'src/system/files/files.service';
 
-
 @Injectable()
 export class MuroService {
   constructor(
@@ -19,6 +18,7 @@ export class MuroService {
   async createPublicacion(createPublicacionDto: CreatePublicacionDto, usuarioId: string, imagen?: Express.Multer.File): Promise<any> {
     const newPublicacion = this.publicacionRepository.create({ ...createPublicacionDto, usuario_id: usuarioId });
 
+    // Manejar la subida de la imagen si existe
     if (imagen) {
       const imagenPath = await this.filesService.handleFileUpload(imagen, { user: { usuario_id: usuarioId } });
       newPublicacion.imagen_url = imagenPath.relativePath;

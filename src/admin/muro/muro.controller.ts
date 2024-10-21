@@ -1,28 +1,33 @@
-import { Controller, Post, Body, UseGuards, Get, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseGuards, UseInterceptors, UploadedFile, Request } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { MuroService } from './muro.service';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesService } from 'src/system/files/files.service';
 import { multerConfig } from 'src/multer.config';
-import { ApiTags } from '@nestjs/swagger';
 
-@ApiTags('muro')
 @Controller('admin/muro')
 export class MuroController {
-  constructor(private readonly muroService: MuroService) {}
+  constructor(
+    private readonly muroService: MuroService,
+    private readonly filesService: FilesService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  @UseInterceptors(FileInterceptor('imagen', multerConfig())) 
-  async create(@Body() createPublicacionDto: CreatePublicacionDto, @UploadedFile() file: Express.Multer.File, @Request() req) {
-    const usuarioId: string = req.user.usuario_id;
-
-    return this.muroService.createPublicacion(createPublicacionDto, usuarioId, file);
+  @UseInterceptors(FileInterceptor('imagen', multerConfig()))
+  async createPublicacion(
+    @Body() createPublicacionDto: CreatePublicacionDto,
+    @UploadedFile() imagen: Express.Multer.File,
+    @Request() req: any
+  ) {
+    const usuarioId = req.user.usuario_id;
+    return this.muroService.createPublicacion(createPublicacionDto, usuarioId, imagen);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('publicaciones')
-  async findAll() {
+  async findAllPublicaciones() {
     return this.muroService.findAllPublicaciones();
   }
 }

@@ -14,6 +14,6 @@ export class Publicacion {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha_publicacion: Date;
 
-  @Column( { nullable: true })
+  @Column({ nullable: true })
   imagen_url: string;
 }
