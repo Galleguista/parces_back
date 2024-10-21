@@ -23,7 +23,6 @@ export class FilesController {
   async getFile(
     @Param('module') module: string,
     @Param('submodule') submodule: string,
-    @Param('subsubmodule') subsubmodule: string,
     @Param('year') year: string,
     @Param('month') month: string, 
     @Param('day') day: string,
@@ -35,7 +34,6 @@ export class FilesController {
       '/home/orion7/uploads', 
       module, 
       submodule, 
-      subsubmodule,
       year, 
       month, 
       day, 
