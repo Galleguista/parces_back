@@ -39,6 +39,7 @@ export class UsersController {
         const uploadResult = await this.filesService.handleFileUpload(file, req);
         avatarPath = uploadResult.relativePath; 
 
+        // Aquí almacenamos la URL en la base de datos
         createUserDto.avatar = avatarPath;
       }
 
@@ -59,28 +60,31 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Put('me')
-  @UseInterceptors(FileInterceptor('avatar', multerConfig())) 
-  async updateProfile(
-    @Request() req: any,
-    @UploadedFile() file: Express.Multer.File, 
-    @Body() updateUserDto: UpdateUserDto
-  ) {
-    const userId = req.user.usuario_id;
+@UseInterceptors(FileInterceptor('avatar', multerConfig())) 
+async updateProfile(
+  @Request() req: any,
+  @UploadedFile() file: Express.Multer.File, 
+  @Body() updateUserDto: UpdateUserDto
+) {
+  console.log('Archivo subido:', file);
+  console.log('Datos de actualización:', updateUserDto);
 
-    let avatarPath = '';
-    if (file) {
-      const uploadResult = await this.filesService.handleFileUpload(file, req);
-      avatarPath = uploadResult.relativePath;
+  const userId = req.user.usuario_id;
 
-      // Actualizamos el avatar en la base de datos
-      await this.usersService.updateAvatar(userId, avatarPath);
-    }
+  let avatarPath = '';
+  if (file) {
+    const uploadResult = await this.filesService.handleFileUpload(file, req);
+    avatarPath = uploadResult.relativePath;
 
-    await this.usersService.update(userId, updateUserDto);
-    const updatedUser = await this.usersService.findOne(userId);
-
-    return updatedUser;
+    await this.usersService.updateAvatar(userId, avatarPath);
   }
+
+  await this.usersService.update(userId, updateUserDto);
+  const updatedUser = await this.usersService.findOne(userId);
+
+  return updatedUser;
+}
+
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
