@@ -1,52 +1,83 @@
-import { Controller, Post, Body, Get, Param, Delete, UseGuards, UploadedFile, UseInterceptors, UploadedFiles } from '@nestjs/common';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
-import { CreateRecursoDto } from './dto/create-recurso.dto';
+import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, Request } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { RecursosService } from './recurso.service';
-
-import { ApiTags } from '@nestjs/swagger';
+import { CreateRecursoDto } from './dto/create-recurso.dto';
+import { UpdateRecursoDto } from './dto/update-recurso.dto';
+import { FilesService } from 'src/system/files/files.service';
 import { multerConfig } from 'src/multer.config';
 
-@ApiTags('recursos')
 @Controller('recursos')
 export class RecursosController {
-  constructor(private readonly recursosService: RecursosService) {}
-
-  // @UseGuards(JwtAuthGuard)
-  // @Post('create')
-  // @UseInterceptors(
-  //   FileFieldsInterceptor(
-  //     [
-  //       { name: 'imagen', maxCount: 1 },
-  //       { name: 'pdf', maxCount: 1 },
-  //     ],
-  //     multerConfig(['image/jpeg', 'image/png', 'application/pdf'])
-  //   )
-  // )
-  // async createRecurso(@UploadedFiles() files, @Body() createRecursoDto: CreateRecursoDto) {
-  //   const imagen = files?.imagen?.[0];
-  //   const pdf = files?.pdf?.[0];
-
-  //   const imagen_url = imagen ? `/uploads/${imagen.filename}` : null;
-  //   const pdf_url = pdf ? `/uploads/${pdf.filename}` : null;
-
-  //   return this.recursosService.createRecurso({
-  //     ...createRecursoDto,
-  //     imagen_url,
-  //     pdf_url,
-  //   });
-  // }
+  constructor(
+    private readonly recursosService: RecursosService,
+    private readonly filesService: FilesService
+  ) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get()
-  async getAllRecursos() {
-    return this.recursosService.getAllRecursos();
+  @Post('create')
+  @UseInterceptors(FileInterceptor('imagen', multerConfig())) 
+  async createRecurso(
+    @Body() createRecursoDto: CreateRecursoDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any
+  ) {
+    let imagenPath = '';
+
+    if (file) {
+      const uploadResult = await this.filesService.handleFileUpload(file, req);
+      imagenPath = uploadResult.relativePath;
+      createRecursoDto.imagen_url = imagenPath; // Guardar la ruta de la imagen en la base de datos
+    }
+
+    const newRecurso = await this.recursosService.createRecurso(createRecursoDto);
+    return newRecurso;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':recursoId')
+  @UseInterceptors(FileInterceptor('imagen', multerConfig())) 
+  async updateRecurso(
+    @Param('recursoId') recursoId: string,
+    @Body() updateRecursoDto: UpdateRecursoDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any
+  ) {
+    let imagenPath = '';
+
+    if (file) {
+      const uploadResult = await this.filesService.handleFileUpload(file, req);
+      imagenPath = uploadResult.relativePath;
+      updateRecursoDto.imagen_url = imagenPath;
+    }
+
+    const updatedRecurso = await this.recursosService.updateRecurso(recursoId, updateRecursoDto);
+    return updatedRecurso;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':recursoId')
   async getRecursoById(@Param('recursoId') recursoId: string) {
-    return this.recursosService.getRecursoById(recursoId);
+    const recurso = await this.recursosService.getRecursoById(recursoId);
+
+    if (recurso.imagen_url) {
+      recurso.imagen_url = this.filesService.getFileUrl(recurso.imagen_url); // Convertir ruta de archivo
+    }
+
+    return recurso;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getAllRecursos() {
+    const recursos = await this.recursosService.getAllRecursos();
+
+    return recursos.map(recurso => {
+      if (recurso.imagen_url) {
+        recurso.imagen_url = this.filesService.getFileUrl(recurso.imagen_url);
+      }
+      return recurso;
+    });
   }
 
   @UseGuards(JwtAuthGuard)

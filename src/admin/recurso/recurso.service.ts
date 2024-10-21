@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRecursoDto } from './dto/create-recurso.dto';
 import { Recurso } from './entities/recurso.entity';
+import { UpdateRecursoDto } from './dto/update-recurso.dto';
 
 @Injectable()
 export class RecursosService {
@@ -14,6 +15,11 @@ export class RecursosService {
   async createRecurso(createRecursoDto: CreateRecursoDto): Promise<Recurso> {
     const newRecurso = this.recursoRepository.create(createRecursoDto);
     return this.recursoRepository.save(newRecurso);
+  }
+
+  async updateRecurso(recursoId: string, updateRecursoDto: UpdateRecursoDto): Promise<Recurso> {
+    await this.recursoRepository.update(recursoId, updateRecursoDto);
+    return this.getRecursoById(recursoId);
   }
 
   async getAllRecursos(): Promise<Recurso[]> {
@@ -35,3 +41,4 @@ export class RecursosService {
     }
   }
 }
+
