@@ -31,7 +31,7 @@ export class FilesController {
   ) {
     
     const filePath = join(
-      '/home/orion7/uploads', 
+      '/home/ec2-user/uploads', 
       module, 
       submodule, 
       year, 
