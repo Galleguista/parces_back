@@ -6,7 +6,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from 'src/system/files/files.service';
 import { multerConfig } from 'src/multer.config';
 
-@Controller('admin/muro')
+@Controller('muro')
 export class MuroController {
   constructor(
     private readonly muroService: MuroService,
