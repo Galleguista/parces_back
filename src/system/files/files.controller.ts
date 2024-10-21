@@ -2,10 +2,11 @@ import { Controller, Post, UseInterceptors, UploadedFile, Get, Param, Res, Req }
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { createReadStream, existsSync } from 'fs'; 
-import { join } from 'path';
+import { join, extname } from 'path';
 import { Response } from 'express';  
 import { multerConfig } from 'src/multer.config';
 import { ApiTags } from '@nestjs/swagger';
+import * as mime from 'mime-types'; // Usar esta librería para identificar el tipo MIME
 
 @ApiTags('archivos')
 @Controller('files')
@@ -29,7 +30,7 @@ export class FilesController {
     @Param('filename') filename: string,
     @Res() res: Response,
   ) {
-    
+    // Generar la ruta completa al archivo
     const filePath = join(
       '/home/ec2-user/uploads', 
       module, 
@@ -48,12 +49,21 @@ export class FilesController {
     }
 
     try {
+      // Obtener la extensión del archivo
+      const fileExtension = extname(filePath);
+      // Obtener el tipo MIME basado en la extensión del archivo
+      const mimeType = mime.lookup(fileExtension) || 'application/octet-stream';
       
-      const imageStream = createReadStream(filePath);
-      res.setHeader('Content-Type', 'image/png'); 
-      imageStream.pipe(res);
+      // Crear un stream de lectura
+      const fileStream = createReadStream(filePath);
 
-      imageStream.on('error', (err) => {
+      // Configurar el encabezado `Content-Type` de acuerdo al tipo de archivo
+      res.setHeader('Content-Type', mimeType);
+
+      // Enviar el archivo como respuesta
+      fileStream.pipe(res);
+
+      fileStream.on('error', (err) => {
         console.error(`Error al leer el archivo: ${err.message}`);
         return res.status(500).json({ message: 'Error al leer el archivo' });
       });
