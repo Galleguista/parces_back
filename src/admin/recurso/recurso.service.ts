@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRecursoDto } from './dto/create-recurso.dto';
-import { UpdateRecursoDto } from './dto/update-recurso.dto'; // Importar el DTO de actualización
+import { UpdateRecursoDto } from './dto/update-recurso.dto';
 import { Recurso } from './entities/recurso.entity';
 import { FilesService } from 'src/system/files/files.service'; // Importar el servicio de archivos
 
@@ -14,37 +14,35 @@ export class RecursosService {
     private readonly filesService: FilesService, // Inyectar el servicio de archivos
   ) {}
 
-  async createRecurso(createRecursoDto: CreateRecursoDto): Promise<Recurso> {
-    const newRecurso = this.recursoRepository.create(createRecursoDto);
-    return this.recursoRepository.save(newRecurso);
-  }
+  // Crear un recurso con imagen y/o PDF
+  async createRecurso(createRecursoDto: CreateRecursoDto, files: any, req: any): Promise<Recurso> {
+    let imagen_url = '';
+    let pdf_url = '';
 
-  async handleFileUploads(files: any, req: any, createRecursoDto: CreateRecursoDto): Promise<Recurso> {
-    let imagenUrl = null;
-    let pdfUrl = null;
-
-    // Manejar la imagen si existe
+    // Procesar la imagen si existe
     if (files.imagen && files.imagen[0]) {
-      const imagen = files.imagen[0];
-      const relativePath = (await this.filesService.handleFileUpload(imagen, req)).relativePath;
-      imagenUrl = this.filesService.getFileUrl(relativePath); // Armar la URL completa
+      const relativePath = await this.filesService.handleFileUpload(files.imagen[0], req);
+      imagen_url = relativePath.relativePath; // Ruta relativa devuelta por el FilesService
     }
 
-    // Manejar el PDF si existe
+    // Procesar el PDF si existe
     if (files.pdf && files.pdf[0]) {
-      const pdf = files.pdf[0];
-      const relativePath = (await this.filesService.handleFileUpload(pdf, req)).relativePath;
-      pdfUrl = this.filesService.getFileUrl(relativePath); // Armar la URL completa
+      const relativePath = await this.filesService.handleFileUpload(files.pdf[0], req);
+      pdf_url = relativePath.relativePath; // Ruta relativa devuelta por el FilesService
     }
 
-    // Crear el recurso con las URLs generadas
-    return this.createRecurso({
+    // Crear el nuevo recurso con las URLs configuradas correctamente
+    const newRecurso = this.recursoRepository.create({
       ...createRecursoDto,
-      imagen_url: imagenUrl,
-      pdf_url: pdfUrl,
+      imagen_url,
+      pdf_url,
     });
+
+    // Guardar el recurso en la base de datos
+    return await this.recursoRepository.save(newRecurso);
   }
 
+  // Actualizar un recurso con una nueva imagen o PDF
   async updateRecurso(recursoId: string, updateRecursoDto: UpdateRecursoDto, files: any, req: any): Promise<Recurso> {
     const recurso = await this.recursoRepository.findOne({ where: { recurso_id: recursoId } });
 
@@ -52,38 +50,42 @@ export class RecursosService {
       throw new NotFoundException('Recurso no encontrado');
     }
 
-    // Si se sube una nueva imagen, manejar la subida y actualización de la URL
+    // Actualizar la imagen si hay una nueva
     if (files.imagen && files.imagen[0]) {
-      const imagen = files.imagen[0];
-      const relativePath = (await this.filesService.handleFileUpload(imagen, req)).relativePath;
-      updateRecursoDto.imagen_url = this.filesService.getFileUrl(relativePath); // Armar la URL completa
+      const relativePath = await this.filesService.handleFileUpload(files.imagen[0], req);
+      updateRecursoDto.imagen_url = relativePath.relativePath;
     }
 
-    // Si se sube un nuevo PDF, manejar la subida y actualización de la URL
+    // Actualizar el PDF si hay uno nuevo
     if (files.pdf && files.pdf[0]) {
-      const pdf = files.pdf[0];
-      const relativePath = (await this.filesService.handleFileUpload(pdf, req)).relativePath;
-      updateRecursoDto.pdf_url = this.filesService.getFileUrl(relativePath); // Armar la URL completa
+      const relativePath = await this.filesService.handleFileUpload(files.pdf[0], req);
+      updateRecursoDto.pdf_url = relativePath.relativePath;
     }
 
-    // Actualizar el recurso con las nuevas propiedades
+    // Actualizar el recurso con los nuevos datos
     Object.assign(recurso, updateRecursoDto);
 
-    return this.recursoRepository.save(recurso);
+    // Guardar el recurso actualizado en la base de datos
+    return await this.recursoRepository.save(recurso);
   }
 
-  async getAllRecursos(): Promise<Recurso[]> {
-    return this.recursoRepository.find();
-  }
-
+  // Obtener un recurso por ID
   async getRecursoById(recursoId: string): Promise<Recurso> {
     const recurso = await this.recursoRepository.findOne({ where: { recurso_id: recursoId } });
+
     if (!recurso) {
       throw new NotFoundException('Recurso no encontrado');
     }
+
     return recurso;
   }
 
+  // Obtener todos los recursos
+  async getAllRecursos(): Promise<Recurso[]> {
+    return await this.recursoRepository.find();
+  }
+
+  // Eliminar un recurso por ID
   async deleteRecurso(recursoId: string): Promise<void> {
     const result = await this.recursoRepository.delete(recursoId);
     if (result.affected === 0) {

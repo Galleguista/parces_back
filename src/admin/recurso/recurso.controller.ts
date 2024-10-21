@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, Request, UploadedFiles } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, Request, UploadedFiles, Req } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { RecursosService } from './recurso.service';
@@ -14,54 +14,39 @@ export class RecursosController {
     private readonly filesService: FilesService
   ) {}
 
-  @UseGuards(JwtAuthGuard)
   @Post('create')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'imagen', maxCount: 1 },
-      { name: 'pdf', maxCount: 1 },
-    ], multerConfig())
-  )
-  async createRecurso(
-    @UploadedFiles() files: { imagen?: Express.Multer.File[], pdf?: Express.Multer.File[] },
-    @Body() createRecursoDto: CreateRecursoDto
-  ) {
-    let imagen_url = '';
-    let pdf_url = '';
+@UseInterceptors(
+  FileFieldsInterceptor([
+    { name: 'imagen', maxCount: 1 },
+    { name: 'pdf', maxCount: 1 },
+  ], multerConfig())
+)
+async createRecurso(
+  @UploadedFiles() files: { imagen?: Express.Multer.File[], pdf?: Express.Multer.File[] },
+  @Body() createRecursoDto: CreateRecursoDto,
+  @Req() req: any
+) {
+  const recurso = await this.recursosService.createRecurso(createRecursoDto, files, req);
+  return recurso;
+}
 
-    if (files.imagen && files.imagen[0]) {
-      imagen_url = this.filesService.getFileUrl(files.imagen[0].path);
-    }
-    if (files.pdf && files.pdf[0]) {
-      pdf_url = this.filesService.getFileUrl(files.pdf[0].path);
-    }
-
-    const recurso = await this.recursosService.createRecurso({
-      ...createRecursoDto,
-      imagen_url,
-      pdf_url,
-    });
-
-    return recurso;
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Put(':recursoId')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'imagen', maxCount: 1 },
-      { name: 'pdf', maxCount: 1 },
-    ], multerConfig())
-  )
-  async updateRecurso(
-    @Param('recursoId') recursoId: string,
-    @Body() updateRecursoDto: UpdateRecursoDto,
-    @UploadedFiles() files: { imagen?: Express.Multer.File[], pdf?: Express.Multer.File[] },
-    @Request() req: any
-  ) {
-    const updatedRecurso = await this.recursosService.updateRecurso(recursoId, updateRecursoDto, files, req);
-    return updatedRecurso;
-  }
+ 
+@Put(':recursoId')
+@UseInterceptors(
+  FileFieldsInterceptor([
+    { name: 'imagen', maxCount: 1 },
+    { name: 'pdf', maxCount: 1 },
+  ], multerConfig())
+)
+async updateRecurso(
+  @Param('recursoId') recursoId: string,
+  @UploadedFiles() files: { imagen?: Express.Multer.File[], pdf?: Express.Multer.File[] },
+  @Body() updateRecursoDto: UpdateRecursoDto,
+  @Req() req: any
+) {
+  const recurso = await this.recursosService.updateRecurso(recursoId, updateRecursoDto, files, req);
+  return recurso;
+}
 
   @UseGuards(JwtAuthGuard)
   @Get(':recursoId')
