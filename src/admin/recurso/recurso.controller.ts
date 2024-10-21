@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Put, UseGuards, UseInterceptors, UploadedFile, Request, UploadedFiles } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { RecursosService } from './recurso.service';
 import { CreateRecursoDto } from './dto/create-recurso.dto';
 import { UpdateRecursoDto } from './dto/update-recurso.dto';
@@ -16,23 +16,35 @@ export class RecursosController {
 
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  @UseInterceptors(FileInterceptor('imagen', multerConfig())) 
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'imagen', maxCount: 1 },
+      { name: 'pdf', maxCount: 1 },
+    ], multerConfig())
+  )
   async createRecurso(
-    @Body() createRecursoDto: CreateRecursoDto,
-    @UploadedFile() file: Express.Multer.File,
-    @Request() req: any
+    @UploadedFiles() files: { imagen?: Express.Multer.File[], pdf?: Express.Multer.File[] },
+    @Body() createRecursoDto: CreateRecursoDto
   ) {
-    let imagenPath = '';
+    let imagen_url = '';
+    let pdf_url = '';
 
-    if (file) {
-      const uploadResult = await this.filesService.handleFileUpload(file, req);
-      imagenPath = uploadResult.relativePath;
-      createRecursoDto.imagen_url = imagenPath; // Guardar la ruta de la imagen en la base de datos
+    if (files.imagen && files.imagen[0]) {
+      imagen_url = this.filesService.getFileUrl(files.imagen[0].path);
+    }
+    if (files.pdf && files.pdf[0]) {
+      pdf_url = this.filesService.getFileUrl(files.pdf[0].path);
     }
 
-    const newRecurso = await this.recursosService.createRecurso(createRecursoDto);
-    return newRecurso;
+    const recurso = await this.recursosService.createRecurso({
+      ...createRecursoDto,
+      imagen_url,
+      pdf_url,
+    });
+
+    return recurso;
   }
+
 
   @UseGuards(JwtAuthGuard)
   @Put(':recursoId')
