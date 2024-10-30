@@ -106,4 +106,9 @@ async updateProfile(
   async getAllUsers() {
     return this.usersService.findAll();
   }
+
+  @Post('by-ids')
+  async getUsersByIds(@Body('userIds') userIds: string[]) {
+    return this.usersService.findUsersByIds(userIds);
+  }
 }

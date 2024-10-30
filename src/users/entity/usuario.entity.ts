@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('usuario')
+@Entity('usuario', {schema:'admin'})
 export class Usuario {
   @PrimaryGeneratedColumn('uuid')
   usuario_id: string;
@@ -22,4 +22,8 @@ export class Usuario {
 
   @Column()
   password: string;
+
+  @Column({ default: 'true' })
+  status: string;
+
 }

@@ -5,17 +5,12 @@ import { TipoConversacion } from './entities/tipo-conversacion.entity';
 
 @Injectable()
 export class TipoConversacionService {
-    constructor(
-        @InjectRepository(TipoConversacion)
-        private readonly tipoConversacionRepo: Repository<TipoConversacion>,
-    ) {}
+  constructor(
+    @InjectRepository(TipoConversacion)
+    private readonly tipoConversacionRepository: Repository<TipoConversacion>,
+  ) {}
 
-    async crearTipoConversacion(descripcion: string): Promise<TipoConversacion> {
-        const nuevoTipo = this.tipoConversacionRepo.create({ descripcion });
-        return this.tipoConversacionRepo.save(nuevoTipo);
-    }
-
-    async obtenerTodosLosTipos(): Promise<TipoConversacion[]> {
-        return this.tipoConversacionRepo.find();
-    }
+  async findAll(): Promise<TipoConversacion[]> {
+    return await this.tipoConversacionRepository.find();
+  }
 }

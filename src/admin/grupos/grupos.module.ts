@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Grupo } from './entities/grupo.entity';
-import { Usuario } from 'src/users/entity/usuario.entity';
-import { GrupoService } from './grupos.service';
-import { GrupoController } from './grupos.controller';
 
+import { Grupo } from './entities/grupo.entity';
+import { GrupoController } from './grupos.controller';
+import { GrupoService } from './grupos.service';
+import { UsersModule } from 'src/users/users.module';
+import { ConversacionModule } from 'src/new-chat/conversacion/conversacion.module';
+import { Usuario } from 'src/users/entity/usuario.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Grupo, Usuario])],
-    controllers: [GrupoController],
-    providers: [GrupoService],
-    exports: [GrupoService],
+  imports: [TypeOrmModule.forFeature([Grupo, Usuario]), ConversacionModule],
+  controllers: [GrupoController],
+  providers: [GrupoService],
 })
 export class GrupoModule {}

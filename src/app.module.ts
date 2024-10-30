@@ -12,13 +12,11 @@ import { RecursosModule } from './admin/recurso/recurso.module';
 import { LogrosModule } from './admin/logros/logros.module';
 import { ForosModule } from './admin/foros/foros.module';
 import { EventosModule } from './admin/eventos/eventos.module';
-
 import { FilesModule } from './system/files/files.module';
 import { NotificationsModule } from './system/notifications/notifications.module';
 import { TipoConversacionModule } from './new-chat/tipo-conversacion/tipo-conversacion.module';
-import { ConversacionesModule } from './new-chat/conversacion/conversacion.module';
-import { ParticipanteModule } from './new-chat/participante/participante.module';
-import { MensajesModule } from './new-chat/mensaje/mensaje.module';
+import { ConversacionModule } from './new-chat/conversacion/conversacion.module';
+import { MensajeModule } from './new-chat/mensaje/mensaje.module';
 
 
 @Module({
@@ -54,9 +52,8 @@ import { MensajesModule } from './new-chat/mensaje/mensaje.module';
     FilesModule,
     NotificationsModule,
     TipoConversacionModule,
-    ConversacionesModule,
-    ParticipanteModule,
-    MensajesModule,
+    ConversacionModule,
+    MensajeModule,
   ],
 })
 export class AppModule {}

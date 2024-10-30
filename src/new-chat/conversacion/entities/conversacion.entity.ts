@@ -1,18 +1,16 @@
-import { Grupo } from 'src/admin/grupos/entities/grupo.entity';
-import { TipoConversacion } from 'src/new-chat/tipo-conversacion/entities/tipo-conversacion.entity';
-import { Entity, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('conversaciones')
+@Entity('conversaciones', {schema: 'admin'})
 export class Conversacion {
-    @PrimaryGeneratedColumn('uuid')
-    conversacion_id: string;
+  @PrimaryGeneratedColumn('uuid')
+  conversacion_id: string;
 
-    @ManyToOne(() => TipoConversacion, tipo => tipo.tipo_conversacion_id, { onDelete: 'CASCADE' })
-    tipo_conversacion: TipoConversacion;
+  @Column({ type: 'uuid' })
+  tipo_conversacion_id: string; 
 
-    @ManyToOne(() => Grupo, grupo => grupo.grupo_id, { nullable: true, onDelete: 'CASCADE' })
-    grupo: Grupo;
+  @Column({ type: 'jsonb' })
+  user_ids: { id: string }[];  
 
-    @CreateDateColumn({ type: 'timestamp' })
-    fecha_creacion: Date;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  fecha_creacion: Date;
 }
