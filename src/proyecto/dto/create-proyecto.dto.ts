@@ -7,12 +7,7 @@ export class CreateProyectoDto {
   tipo_cultivo?: string;
   tipo_ganaderia?: string;
   otro?: string;
-  ubicacion_departamento?: string;
-  ubicacion_municipio?: string;
-  ubicacion_region?: string;
-  ubicacion_altitud?: string;
-  ubicacion_clima?: string;
-  ubicacion_coordenadas?: string;
+  ubicacion_id: string;
   cuenta_con_terreno?: boolean;
   terreno_tamano?: string;
   terreno_vias_acceso?: string;
@@ -28,12 +23,12 @@ export class CreateProyectoDto {
   beneficios_aparcero?: string;
   condiciones_proyecto?: string;
   criterios_seleccion?: string;
-  numero_participantes?: number;  
+  numero_participantes?: number;
   lista_recursos?: string;
   responsabilidades_aparcero?: string;
   colaboradores_buscados?: string;
   fecha_de_inicio: Date;
   fecha_de_fin?: Date;
-  imagen_representativa?: Buffer;
+  imagen_representativa?: string;
   documentos_relevantes?: string;
 }
