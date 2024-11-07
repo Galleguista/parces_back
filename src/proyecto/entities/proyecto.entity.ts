@@ -8,96 +8,51 @@ export class Proyecto {
   @Column({ length: 255 })
   nombre: string;
 
-  @Column('text', { nullable: true })
+  @Column('text')
   descripcion: string;
 
-  @Column('text', { nullable: true })
-  objetivos: string;
+  @Column({ length: 255 })
+  ubicacion: string;
 
-  @Column('text', { nullable: true })
-  actividades_planificadas: string;
+  @Column({ length: 255 })
+  tipo_aparceria: string;
 
-  @Column({ length: 255, nullable: true })
-  categoria: string;
+  @Column({ length: 255 })
+  tamano_terreno: string;
 
-  @Column({ length: 255, nullable: true })
-  tipo_cultivo: string;
+  @Column({ length: 255 })
+  duracion_proyecto: string;
 
-  @Column({ length: 255, nullable: true })
-  tipo_ganaderia: string;
-
-  @Column({ length: 255, nullable: true })
-  otro: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  ubicacion_id: string;
-
-  @Column({ nullable: true })
-  cuenta_con_terreno: boolean;
-
-  @Column({ length: 255, nullable: true })
-  terreno_tamano: string;
-
-  @Column('text', { nullable: true })
-  terreno_vias_acceso: string;
-
-  @Column('text', { nullable: true })
-  terreno_acceso_recursos: string;
-
-  @Column('text', { nullable: true })
-  informacion_adicional: string;
-
-  @Column({ length: 255, nullable: true })
-  contacto_nombre: string;
-
-  @Column({ length: 255, nullable: true })
-  contacto_correo: string;
-
-  @Column({ length: 50, nullable: true })
-  contacto_telefono: string;
-
-  @Column('text', { nullable: true })
-  requisitos_participacion: string;
-
-  @Column({ length: 255, nullable: true })
-  experiencia_requerida: string;
-
-  @Column({ length: 255, nullable: true })
-  disponibilidad_tiempo: string;
-
-  @Column('text', { nullable: true })
-  competencias_especificas: string;
-
-  @Column('text', { nullable: true })
-  beneficios_aparcero: string;
-
-  @Column('text', { nullable: true })
-  condiciones_proyecto: string;
-
-  @Column('text', { nullable: true })
-  criterios_seleccion: string;
-
-  @Column({ nullable: true })
+  @Column('int')
   numero_participantes: number;
 
-  @Column('text', { nullable: true })
-  lista_recursos: string;
+  @Column('text')
+  aportes_participantes: string;
 
-  @Column('text', { nullable: true })
-  responsabilidades_aparcero: string;
+  @Column('text')
+  recursos_disponibles: string;
 
-  @Column('text', { nullable: true })
-  colaboradores_buscados: string;
+  @Column({ length: 255 })
+  modalidad_participacion: string;
 
-  @Column('date')
-  fecha_de_inicio: Date;
+  @Column({ length: 255 })
+  modelo_reparto: string;
 
-  @Column('date', { nullable: true })
-  fecha_de_fin: Date;
+  @Column({ length: 255 })
+  nombre_encargado: string;
 
-  @Column('text', { nullable: true })
+  @Column({ length: 255 })
+  correo_contacto: string;
+
+  @Column({ length: 50 })
+  telefono_contacto: string;
+
+  @Column({ length: 255 })
+  icono_seleccionado: string;
+
+  @Column('text')
   documentos_relevantes: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column('text', { nullable: true })
   imagen_representativa: string;
 }
