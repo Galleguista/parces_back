@@ -3,8 +3,8 @@ export class CreateProyectoDto {
   descripcion: string;
   ubicacion: string;
   tipo_aparceria: string;
-  tamano_terreno: string;
-  duracion_proyecto: string;
+  tamano_terreno: string; // Cambiado a string
+  duracion_proyecto: string; // Cambiado a string
   numero_participantes: number;
   aportes_participantes: string;
   recursos_disponibles: string;
@@ -14,7 +14,11 @@ export class CreateProyectoDto {
   correo_contacto: string;
   telefono_contacto: string;
   icono_seleccionado: string;
-  documentos_relevantes: string;
+  aceptar_terminos: boolean;
+  publicar_comunidad: boolean;
+  usuario_id: string;
+  conversacion_id: string;
+  documentos_relevantes?: string;
   imagen_representativa?: string;
-  archivos?: string[]; // Añadir este campo
+  archivos?: string[]; // Campo opcional
 }

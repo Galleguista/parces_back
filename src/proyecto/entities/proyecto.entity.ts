@@ -17,10 +17,10 @@ export class Proyecto {
   @Column({ length: 255 })
   tipo_aparceria: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'varchar', length: 255 }) // Cambiado a string
   tamano_terreno: string;
 
-  @Column({ length: 255 })
+  @Column({ type: 'varchar', length: 255 }) // Cambiado a string
   duracion_proyecto: string;
 
   @Column('int')
@@ -50,9 +50,21 @@ export class Proyecto {
   @Column({ length: 255 })
   icono_seleccionado: string;
 
-  @Column('text')
+  @Column('text', { nullable: true })
   documentos_relevantes: string;
 
   @Column('text', { nullable: true })
   imagen_representativa: string;
+
+  @Column({ default: false })
+  aceptar_terminos: boolean;
+
+  @Column({ default: false })
+  publicar_comunidad: boolean;
+
+  @Column('uuid')
+  usuario_id: string;
+
+  @Column('uuid')
+  conversacion_id: string;
 }

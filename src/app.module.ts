@@ -17,6 +17,10 @@ import { NotificationsModule } from './system/notifications/notifications.module
 import { TipoConversacionModule } from './new-chat/tipo-conversacion/tipo-conversacion.module';
 import { ConversacionModule } from './new-chat/conversacion/conversacion.module';
 import { MensajeModule } from './new-chat/mensaje/mensaje.module';
+import { RoleModule } from './system/role/role.module';
+import { ScopeModule } from './system/scope/scope.module';
+import { RoleScopeModule } from './system/role-scope/role-scope.module';
+import { UserRoleModule } from './system/user-role/user-role.module';
 
 
 @Module({
@@ -54,6 +58,10 @@ import { MensajeModule } from './new-chat/mensaje/mensaje.module';
     TipoConversacionModule,
     ConversacionModule,
     MensajeModule,
+    RoleModule,
+    ScopeModule,
+    RoleScopeModule,
+    UserRoleModule,
   ],
 })
 export class AppModule {}
