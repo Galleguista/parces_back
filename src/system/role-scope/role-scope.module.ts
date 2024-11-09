@@ -8,5 +8,6 @@ import { RoleScope } from './entities/role-scope.entity';
   imports: [TypeOrmModule.forFeature([RoleScope])],
   providers: [RoleScopeService],
   controllers: [RoleScopeController],
+  exports: [RoleScopeService]
 })
 export class RoleScopeModule {}

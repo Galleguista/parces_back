@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../users/users.service';
 import * as bcrypt from 'bcryptjs';
 import { RoleService } from 'src/system/role/role.service';
-
+import { RoleScopeService } from 'src/system/role-scope/role-scope.service';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +11,7 @@ export class AuthService {
     private readonly usersService: UserService,
     private readonly jwtService: JwtService,
     private readonly roleService: RoleService,
+    private readonly roleScopeService: RoleScopeService, // Inyecta RoleScopeService
   ) {}
 
   async validateUser(correo_electronico: string, pass: string): Promise<any> {
@@ -23,23 +24,26 @@ export class AuthService {
   }
 
   async login(user: any) {
-    // Obtenemos el rol asociado al usuario
+    // Obtenemos el rol y los scopes asociados al usuario
     const role = await this.roleService.findRoleByUserId(user.usuario_id);
 
     if (!role) {
       throw new Error('El rol del usuario no está registrado.');
     }
 
-    // Incluimos el role_id en el payload en lugar del role_name
+    // Obtenemos los scopes del role y los añadimos al payload
+    const scopes = await this.roleScopeService.findScopesByRoleId(role.role_id);
+
     const payload = { 
       correo_electronico: user.correo_electronico, 
       sub: user.usuario_id, 
       nombre: user.nombre, 
-      role_id: role.role_id // Incluimos role_id para identificar el rol
+      role_id: role.role_id, 
+      scopes // Incluimos los scopes directamente en el payload
     };
 
     const token = this.jwtService.sign(payload);
-    console.log('Generated token with role_id:', token); 
+    console.log('Generated token with scopes:', token); 
 
     return {
       access_token: token,

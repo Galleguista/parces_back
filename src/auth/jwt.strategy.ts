@@ -14,12 +14,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log('Decoded JWT with role:', payload);  // Para confirmar que el payload contiene la información correcta
+    console.log('Decoded JWT with scopes:', payload); // Para confirmar que los scopes están presentes
     return { 
       usuario_id: payload.sub, 
       correo_electronico: payload.correo_electronico, 
       nombre: payload.nombre,
-      role: payload.role // Retorna el rol en el contexto del usuario autenticado
+      role_id: payload.role_id, 
+      scopes: payload.scopes // Incluimos los scopes directamente en el contexto del usuario
     };
   }
 }

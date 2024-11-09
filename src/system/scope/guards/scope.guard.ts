@@ -15,12 +15,12 @@ export class ScopesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || !user.role || !user.role.scopes) {
+    if (!user || !user.scopes) {
       throw new ForbiddenException('No tiene permiso para acceder a este recurso.');
     }
 
-    const hasScope = requiredScopeIds.some(scopeId => user.role.scopes.includes(scopeId));
-
+    // Verifica si el usuario tiene al menos uno de los scopes requeridos
+    const hasScope = requiredScopeIds.some(scopeId => user.scopes.includes(scopeId));
     if (!hasScope) {
       throw new ForbiddenException('No tiene permiso para acceder a este recurso.');
     }

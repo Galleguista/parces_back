@@ -16,6 +16,12 @@ export class RoleScopeService {
     return this.roleScopeRepository.save(roleScope);
   }
 
+  async findScopesByRoleId(roleId: string): Promise<string[]> {
+    // Busca los permisos asociados al `role_id`
+    const roleScopes = await this.roleScopeRepository.find({ where: { role_id: roleId } });
+    return roleScopes.map(roleScope => roleScope.scope_id); // Devuelve una lista de `scope_id`
+  }
+
   async findAll(): Promise<RoleScope[]> {
     return this.roleScopeRepository.find();
   }

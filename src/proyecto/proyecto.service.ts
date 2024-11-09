@@ -49,9 +49,12 @@ export class ProyectoService {
       proyecto_id: id,
       ...updateProyectoDto,
     });
+  
     if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
+  
     return this.proyectoRepository.save(proyecto);
   }
+  
 
   async remove(id: string): Promise<void> {
     const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: id } });

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
@@ -14,14 +14,13 @@ export class ProyectoController {
   @UseGuards(JwtAuthGuard)
   @Post('create')
   async create(@Body() createProyectoDto: CreateProyectoDto, @Request() req: any) {
-    const usuario_id = req.user.sub; // Extrae el ID del usuario desde `sub`
-
-    if (!usuario_id) {
-      throw new Error('El usuario_id no se encuentra en el token.');
+    console.log('Header Authorization:', req.headers.authorization); // Verifica que el token esté presente y en el formato correcto
+    if (!req.user.usuario_id) {
+      throw new UnauthorizedException('El usuario_id no se encuentra en el token.');
     }
-
-    return this.proyectoService.create(createProyectoDto, usuario_id);
+    return this.proyectoService.create(createProyectoDto, req.user.usuario_id);
   }
+  
   @Get()
   findAll() {
     return this.proyectoService.findAll();
@@ -32,13 +31,12 @@ export class ProyectoController {
     return this.proyectoService.findOne(id);
   }
 
-  @UseGuards(ScopesGuard)
+  @UseGuards(JwtAuthGuard, ScopesGuard )
   @Scopes('6cda5af1-baf9-4ee3-9e5c-bf66d7e3a43c')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProyectoDto: UpdateProyectoDto) {
     return this.proyectoService.update(id, updateProyectoDto);
   }
-
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.proyectoService.remove(id);
