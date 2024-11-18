@@ -23,8 +23,8 @@ export class ProyectoController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':proyecto_id/miembros')
-  getMembersOfProyecto(@Param('proyecto_id') proyecto_id: string) {
-    return this.proyectoService.getMembersOfProyecto(proyecto_id);
+  async getMembersOfProyecto(@Param('proyecto_id') proyecto_id: string) {
+    return this.proyectoService.getMembersWithAdmin(proyecto_id);
   }
   
   @Get()

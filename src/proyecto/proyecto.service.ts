@@ -1,6 +1,6 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Proyecto } from './entities/proyecto.entity';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
@@ -41,32 +41,44 @@ export class ProyectoService {
     return this.proyectoRepository.find();
   }
 
-  async getMembersOfProyecto(proyecto_id: string) {
-    // Buscar el proyecto
-    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id } });
+  async getMembersWithAdmin(proyecto_id: string) {
+    // Obtener proyecto
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { proyecto_id },
+    });
     if (!proyecto) {
-      throw new NotFoundException(`No se encontró el proyecto con ID ${proyecto_id}`);
+      throw new NotFoundException(`Proyecto con ID ${proyecto_id} no encontrado.`);
     }
 
-    // Obtener la conversación asociada
+    // Obtener conversación asociada al proyecto
     const conversacion = await this.conversacionRepository.findOne({
       where: { conversacion_id: proyecto.conversacion_id },
     });
     if (!conversacion) {
-      throw new NotFoundException(`No se encontró la conversación para el proyecto con ID ${proyecto_id}`);
+      throw new NotFoundException(`Conversación para el proyecto con ID ${proyecto_id} no encontrada.`);
     }
 
-    // Obtener los IDs de usuario
+    // Obtener miembros de la conversación
     const userIds = conversacion.user_ids.map((user) => user.id);
+    const miembros = await this.usuarioRepository.find({
+      where: { usuario_id: In(userIds) },
+      select: ['usuario_id', 'nombre', 'avatar'],
+    });
+    
 
-    // Buscar usuarios en base a los IDs
-    const usuarios = await this.usuarioRepository.findByIds(userIds);
+    // Obtener administrador del proyecto
+    const administrador = await this.usuarioRepository.findOne({
+      where: { usuario_id: proyecto.usuario_id },
+      select: ['usuario_id', 'nombre', 'avatar'],
+    });
+    if (administrador) {
+      return {
+        administrador,
+        miembros,
+      };
+    }
 
-    const usuariosOrdenados = usuarios.sort((a, b) =>
-      a.nombre.localeCompare(b.nombre)
-    );
-
-    return usuariosOrdenados;
+    return { miembros };
   }
 
   async findOne(id: string): Promise<Proyecto> {

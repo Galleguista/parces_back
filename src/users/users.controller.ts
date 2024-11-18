@@ -24,7 +24,7 @@ export class UsersController {
     @Request() req: any
   ) {
     try {
-      const existingUser = await this.usersService.findByEmail(createUserDto.correo_electronico);
+      const existingUser = await this.usersService.findByUsuario(createUserDto.correo_electronico);
       if (existingUser) {
         return {
           success: false,

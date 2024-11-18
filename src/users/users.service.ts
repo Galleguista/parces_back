@@ -13,7 +13,7 @@ export class UserService {
     private usuarioRepository: Repository<Usuario>,
   ) {}
 
-  // Obtener todos los usuarios
+  // Obtener todos los usuarios`
   async findAll(): Promise<Usuario[]> {
     return this.usuarioRepository.find({
       order: { nombre: 'ASC' },
@@ -58,10 +58,10 @@ export class UserService {
     }
   }
 
-  // Buscar usuario por correo electrónico
-  async findByEmail(correo_electronico: string): Promise<Usuario | undefined> {
-    return this.usuarioRepository.findOne({ where: { correo_electronico } });
+  async findByUsuario(usuario: string): Promise<Usuario | undefined> {
+    return this.usuarioRepository.findOne({ where: { usuario } });
   }
+  
 
   async findUsersByIds(userIds: string[]) {
     return this.usuarioRepository.find({

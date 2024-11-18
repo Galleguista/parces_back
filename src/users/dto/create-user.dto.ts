@@ -28,4 +28,7 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   avatar?: string;
+
+  @IsString()
+  usuario:string;
 }

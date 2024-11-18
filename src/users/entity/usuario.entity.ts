@@ -26,4 +26,7 @@ export class Usuario {
   @Column({ default: 'true' })
   status: string;
 
+  @Column() 
+  usuario: string;
+
 }
