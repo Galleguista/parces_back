@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Grupo } from './entities/grupo.entity';
@@ -43,6 +43,37 @@ export class GrupoService {
     });
 
     return this.grupoRepository.save(grupo);
+  }
+
+  async addMember(grupo_id: string, usuario_id: string, admin_id: string) {
+    // Busca el grupo
+    const grupo = await this.findOne(grupo_id);
+  
+    // Validar si el usuario autenticado es el administrador
+    if (grupo.usuario_id !== admin_id) {
+      throw new ForbiddenException('No tienes permisos para añadir miembros a este grupo.');
+    }
+  
+    // Busca la conversación asociada
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { conversacion_id: grupo.conversacion_id },
+    });
+  
+    if (!conversacion) {
+      throw new NotFoundException(`No se encontró la conversación para el grupo con ID ${grupo_id}`);
+    }
+  
+    // Verifica si el usuario ya es miembro
+    const isAlreadyMember = conversacion.user_ids.some(user => user.id === usuario_id);
+    if (isAlreadyMember) {
+      throw new ConflictException('El usuario ya es miembro del grupo.');
+    }
+  
+    // Añade el nuevo usuario
+    conversacion.user_ids.push({ id: usuario_id });
+    await this.conversacionRepository.save(conversacion);
+  
+    return conversacion;
   }
 
   /**
@@ -103,30 +134,5 @@ export class GrupoService {
    * @param usuario_id ID del usuario a añadir.
    * @returns Conversación actualizada.
    */
-  async addMember(grupo_id: string, usuario_id: string) {
-    const grupo = await this.findOne(grupo_id);
 
-    if (!grupo.conversacion_id) {
-      throw new NotFoundException(`No se encontró una conversación para el grupo con ID ${grupo_id}`);
-    }
-
-    // Obtiene la conversación asociada
-    const conversacion = await this.conversacionRepository.findOne({
-      where: { conversacion_id: grupo.conversacion_id },
-    });
-
-    if (!conversacion) {
-      throw new NotFoundException(`No se encontró la conversación con ID ${grupo.conversacion_id}`);
-    }
-
-    // Verifica si el usuario ya es miembro
-    const isAlreadyMember = conversacion.user_ids.some(user => user.id === usuario_id);
-    if (!isAlreadyMember) {
-      // Añade el nuevo usuario a user_ids
-      conversacion.user_ids.push({ id: usuario_id });
-      await this.conversacionRepository.save(conversacion);
-    }
-
-    return conversacion;
-  }
 }

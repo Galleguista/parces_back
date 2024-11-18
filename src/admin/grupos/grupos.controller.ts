@@ -60,8 +60,15 @@ export class GrupoController {
    * @param body Contiene el ID del usuario a añadir.
    * @returns Conversación actualizada.
    */
+  @UseGuards(JwtAuthGuard)
   @Post(':grupo_id/miembro')
-  addMember(@Param('grupo_id') grupo_id: string, @Body() body: { usuario_id: string }) {
-    return this.grupoService.addMember(grupo_id, body.usuario_id);
+  addMember(
+    @Param('grupo_id') grupo_id: string,
+    @Body() body: { usuario_id: string },
+    @Request() req: any,
+  ) {
+    const admin_id = req.user.usuario_id; // ID del usuario autenticado
+    return this.grupoService.addMember(grupo_id, body.usuario_id, admin_id);
   }
+  
 }

@@ -20,10 +20,27 @@ export class ProyectoController {
     }
     return this.proyectoService.create(createProyectoDto, req.user.usuario_id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':proyecto_id/miembros')
+  getMembersOfProyecto(@Param('proyecto_id') proyecto_id: string) {
+    return this.proyectoService.getMembersOfProyecto(proyecto_id);
+  }
   
   @Get()
   findAll() {
     return this.proyectoService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':proyecto_id/miembro')
+  addMember(
+    @Param('proyecto_id') proyecto_id: string,
+    @Body() body: { usuario_id: string },
+    @Request() req: any,
+  ) {
+    const admin_id = req.user.usuario_id; // ID del usuario autenticado
+    return this.proyectoService.addMember(proyecto_id, body.usuario_id, admin_id);
   }
 
   @Get(':id')
