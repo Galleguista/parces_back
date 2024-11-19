@@ -27,20 +27,20 @@ export class ProyectoController {
     return this.proyectoService.getMembersWithAdmin(proyecto_id);
   }
   
+    @UseGuards(JwtAuthGuard)
+    @Post(':proyecto_id/miembro')
+    async addMember(
+      @Param('proyecto_id') proyectoId: string,
+      @Body('usuario_id') usuarioId: string,
+      @Request() req: any,
+    ) {
+      const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+      return this.proyectoService.addMember(proyectoId, usuarioId, currentUserId);
+    }
+
   @Get()
   findAll() {
     return this.proyectoService.findAll();
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post(':proyecto_id/miembro')
-  addMember(
-    @Param('proyecto_id') proyecto_id: string,
-    @Body() body: { usuario_id: string },
-    @Request() req: any,
-  ) {
-    const admin_id = req.user.usuario_id; // ID del usuario autenticado
-    return this.proyectoService.addMember(proyecto_id, body.usuario_id, admin_id);
   }
 
   @Get(':id')
