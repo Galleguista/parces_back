@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversacion } from './entities/conversacion.entity';
@@ -72,6 +72,27 @@ export class ConversacionService {
     if (!conversacion) throw new NotFoundException(`No se encontró la conversación con ID ${id}`);
     return conversacion;
   }
+
+  async addUsersToConversation(conversacionId: string, userIds: string[]): Promise<Conversacion> {
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { conversacion_id: conversacionId },
+    });
+  
+    if (!conversacion) {
+      throw new NotFoundException(`Conversación con ID ${conversacionId} no encontrada.`);
+    }
+  
+    const existingUserIds = conversacion.user_ids.map((user) => user.id);
+    const newUserIds = userIds.filter((id) => !existingUserIds.includes(id));
+  
+    if (newUserIds.length === 0) {
+      throw new ConflictException('Todos los usuarios ya son miembros de la conversación.');
+    }
+  
+    conversacion.user_ids.push(...newUserIds.map((id) => ({ id })));
+    return this.conversacionRepository.save(conversacion);
+  }
+  
 
   /**
    * Verifica si un usuario es miembro de una conversación.

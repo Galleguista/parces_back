@@ -20,7 +20,7 @@ export class ProyectoController {
     }
     return this.proyectoService.create(createProyectoDto, req.user.usuario_id);
   }
-
+  
   @UseGuards(JwtAuthGuard)
   @Get(':proyecto_id/miembros')
   async getMembersOfProyecto(@Param('proyecto_id') proyecto_id: string) {

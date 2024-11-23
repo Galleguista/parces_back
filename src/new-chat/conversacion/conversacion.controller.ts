@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Req, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards, Req, NotFoundException, Put } from '@nestjs/common';
 import { ConversacionService } from './conversacion.service';
 import { CreateConversacionDto } from './dto/create-conversacion.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -10,7 +10,7 @@ export class ConversacionController {
   @Post()
   create(@Body() createConversacionDto: CreateConversacionDto) {
     return this.conversacionService.create(createConversacionDto);
-  }
+  }f
   
   @UseGuards(JwtAuthGuard)
   @Get(':id/verify-membership')
@@ -34,6 +34,15 @@ export class ConversacionController {
     console.log('Usuario miembro con el que se desea iniciar conversación privada (memberId):', memberId);
 
     return await this.conversacionService.createOrGetPrivateChat(currentUserId, memberId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':conversacion_id/users')
+  async addUsersToConversation(
+    @Param('conversacion_id') conversacionId: string,
+    @Body('user_ids') userIds: string[],
+  ) {
+    return this.conversacionService.addUsersToConversation(conversacionId, userIds);
   }
   
   @Get()
