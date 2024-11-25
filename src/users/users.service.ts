@@ -70,6 +70,19 @@ export class UserService {
     });
   }
 
+  async searchUsers(query: string): Promise<Usuario[]> {
+    if (!query || query.trim() === '') {
+      throw new Error('El parámetro de búsqueda no puede estar vacío.');
+    }
+  
+    const allUsers = await this.findAll();
+  
+    return allUsers.filter(user => 
+      user.usuario?.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+  
+
   // Actualizar avatar del usuario
   async updateAvatar(id: string, avatarPath: string): Promise<Usuario> {
     const user = await this.findOne(id);

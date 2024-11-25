@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile, BadRequestException, Query } from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -58,6 +58,11 @@ export class UsersController {
     }
   }
 
+  @Get('search')
+  async searchUsers(@Query('query') query: string) {
+    return this.usersService.searchUsers(query);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Put('me')
 @UseInterceptors(FileInterceptor('avatar', multerConfig())) 
@@ -105,10 +110,5 @@ async updateProfile(
   @Get()
   async getAllUsers() {
     return this.usersService.findAll();
-  }
-
-  @Post('by-ids')
-  async getUsersByIds(@Body('userIds') userIds: string[]) {
-    return this.usersService.findUsersByIds(userIds);
   }
 }

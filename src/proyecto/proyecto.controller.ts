@@ -20,23 +20,61 @@ export class ProyectoController {
     }
     return this.proyectoService.create(createProyectoDto, req.user.usuario_id);
   }
-  
+
+  // Listar miembro
   @UseGuards(JwtAuthGuard)
   @Get(':proyecto_id/miembros')
   async getMembersOfProyecto(@Param('proyecto_id') proyecto_id: string) {
     return this.proyectoService.getMembersWithAdmin(proyecto_id);
   }
   
-    @UseGuards(JwtAuthGuard)
-    @Post(':proyecto_id/miembro')
-    async addMember(
-      @Param('proyecto_id') proyectoId: string,
-      @Body('usuario_id') usuarioId: string,
-      @Request() req: any,
-    ) {
-      const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
-      return this.proyectoService.addMember(proyectoId, usuarioId, currentUserId);
-    }
+  // Añadir miembro
+  @UseGuards(JwtAuthGuard)
+  @Post(':proyecto_id/miembro')
+  async addMember(
+    @Param('proyecto_id') proyectoId: string,
+    @Body('usuario_id') usuarioId: string,
+    @Request() req: any,
+  ) {
+    const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+    return this.proyectoService.addMember(proyectoId, usuarioId, currentUserId);
+  }
+
+  // Obtener miembro por ID
+  @UseGuards(JwtAuthGuard)
+  @Get(':proyecto_id/miembro/:usuario_id')
+  async getMember(
+    @Param('proyecto_id') proyectoId: string,
+    @Param('usuario_id') usuarioId: string,
+    @Request() req: any,
+  ) {
+    return this.proyectoService.getMember(proyectoId, usuarioId);
+  }
+
+  // Actualizar miembro (ejemplo: rol dentro del proyecto)
+  @UseGuards(JwtAuthGuard)
+  @Patch(':proyecto_id/miembro/:usuario_id')
+  async updateMember(
+    @Param('proyecto_id') proyectoId: string,
+    @Param('usuario_id') usuarioId: string,
+    @Body() updateData: any,
+    @Request() req: any,
+  ) {
+    const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+    return this.proyectoService.updateMember(proyectoId, usuarioId, updateData, currentUserId);
+  }
+
+  // Eliminar miembro
+  @UseGuards(JwtAuthGuard)
+  @Delete(':proyecto_id/miembro/:usuario_id')
+  async removeMember(
+    @Param('proyecto_id') proyectoId: string,
+    @Param('usuario_id') usuarioId: string,
+    @Request() req: any,
+  ) {
+    const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+    return this.proyectoService.removeMember(proyectoId, usuarioId, currentUserId);
+  }
 
   @Get()
   findAll() {

@@ -63,11 +63,22 @@ export class ProyectoService {
     return { administrador, miembros };
   }
 
-  // Obtener proyecto por ID
-  async findOne(id: string): Promise<Proyecto> {
-    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: id } });
-    if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
-    return proyecto;
+  // Obtener miembro específico del proyecto
+  async getMember(proyecto_id: string, usuario_id: string) {
+    const proyecto = await this.findOne(proyecto_id);
+
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { conversacion_id: proyecto.conversacion_id },
+    });
+    if (!conversacion) throw new NotFoundException(`Conversación para el proyecto no encontrada.`);
+
+    const miembro = conversacion.user_ids.find(user => user.id === usuario_id);
+    if (!miembro) throw new NotFoundException(`El usuario con ID ${usuario_id} no es miembro del proyecto.`);
+
+    return this.usuarioRepository.findOne({
+      where: { usuario_id },
+      select: ['usuario_id', 'nombre', 'avatar'],
+    });
   }
 
   // Actualizar proyecto
@@ -109,6 +120,64 @@ export class ProyectoService {
     await this.conversacionRepository.save(conversacion);
 
     return conversacion;
+  }
+
+  // Actualizar miembro del proyecto
+  async updateMember(
+    proyecto_id: string,
+    usuario_id: string,
+    updateData: any, // Por ejemplo, datos como el rol dentro del proyecto
+    admin_id: string,
+  ) {
+    const proyecto = await this.findOne(proyecto_id);
+
+    if (proyecto.usuario_id !== admin_id) {
+      throw new ForbiddenException('Solo el administrador puede actualizar miembros.');
+    }
+
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { conversacion_id: proyecto.conversacion_id },
+    });
+    if (!conversacion) throw new NotFoundException(`Conversación para el proyecto no encontrada.`);
+
+    const miembro = conversacion.user_ids.find(user => user.id === usuario_id);
+    if (!miembro) throw new NotFoundException(`El usuario con ID ${usuario_id} no es miembro del proyecto.`);
+
+    // Actualiza la información del miembro (ejemplo: rol u otra información)
+    Object.assign(miembro, updateData);
+
+    await this.conversacionRepository.save(conversacion);
+
+    return miembro;
+  }
+
+  // Eliminar miembro del proyecto
+  async removeMember(proyecto_id: string, usuario_id: string, admin_id: string) {
+    const proyecto = await this.findOne(proyecto_id);
+
+    if (proyecto.usuario_id !== admin_id) {
+      throw new ForbiddenException('Solo el administrador puede eliminar miembros.');
+    }
+
+    const conversacion = await this.conversacionRepository.findOne({
+      where: { conversacion_id: proyecto.conversacion_id },
+    });
+    if (!conversacion) throw new NotFoundException(`Conversación para el proyecto no encontrada.`);
+
+    const index = conversacion.user_ids.findIndex(user => user.id === usuario_id);
+    if (index === -1) throw new NotFoundException(`El usuario con ID ${usuario_id} no es miembro del proyecto.`);
+
+    conversacion.user_ids.splice(index, 1); // Elimina el miembro
+    await this.conversacionRepository.save(conversacion);
+
+    return { message: `Usuario con ID ${usuario_id} eliminado del proyecto.` };
+  }
+
+  // Obtener proyecto por ID
+  async findOne(id: string): Promise<Proyecto> {
+    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: id } });
+    if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
+    return proyecto;
   }
 
   // Eliminar proyecto
