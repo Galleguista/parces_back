@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Req, NotFoundException, Put } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { ConversacionService } from './conversacion.service';
 import { CreateConversacionDto } from './dto/create-conversacion.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -10,29 +10,19 @@ export class ConversacionController {
   @Post()
   create(@Body() createConversacionDto: CreateConversacionDto) {
     return this.conversacionService.create(createConversacionDto);
-  }f
-  
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id/verify-membership')
-  async verifyMembership(
-    @Param('id') conversacionId: string,
-    @Req() req: any,
-  ) {
+  async verifyMembership(@Param('id') conversacionId: string, @Req() req: any) {
     const isMember = await this.conversacionService.isUserMember(conversacionId, req.user.usuario_id);
     return { isMember };
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Post('private-chat')
-  async createOrGetPrivateChat(
-    @Req() req: any, // Usando el mismo tipo que en otros módulos
-    @Body('memberId') memberId: string,
-  ) {
-    const currentUserId = req.user.usuario_id; // Extrae el ID del usuario autenticado desde el JWT
-
-    console.log('Usuario actual (currentUserId):', currentUserId);
-    console.log('Usuario miembro con el que se desea iniciar conversación privada (memberId):', memberId);
-
+  async createOrGetPrivateChat(@Req() req: any, @Body('memberId') memberId: string) {
+    const currentUserId = req.user.usuario_id;
     return await this.conversacionService.createOrGetPrivateChat(currentUserId, memberId);
   }
 
@@ -44,7 +34,7 @@ export class ConversacionController {
   ) {
     return this.conversacionService.addUsersToConversation(conversacionId, userIds);
   }
-  
+
   @Get()
   findAll() {
     return this.conversacionService.findAll();
