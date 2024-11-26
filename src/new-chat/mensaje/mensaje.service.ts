@@ -3,50 +3,71 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Mensaje } from './entities/mensaje.entity';
 import { CreateMensajeDto } from './dto/create-mensaje.dto';
-import { UserService } from 'src/users/users.service';
+import { MensajeGateway } from './mensaje.gateway';
 
 @Injectable()
 export class MensajeService {
   constructor(
     @InjectRepository(Mensaje)
     private readonly mensajeRepository: Repository<Mensaje>,
-    private readonly usuarioService: UserService,
+    private readonly mensajeGateway: MensajeGateway,
   ) {}
 
-  // Crea un nuevo mensaje utilizando el usuario_id del JWT
+  /**
+   * Crea un nuevo mensaje en la base de datos.
+   * @param createMensajeDto Datos del mensaje.
+   * @param usuario_id ID del usuario autenticado.
+   * @returns Mensaje creado.
+   */
   async create(createMensajeDto: CreateMensajeDto, usuario_id: string): Promise<Mensaje> {
     const mensaje = this.mensajeRepository.create({
       ...createMensajeDto,
-      usuario_id, // Asigna el usuario_id obtenido del JWT
+      usuario_id,
+      fecha_envio: new Date(),
     });
-    return await this.mensajeRepository.save(mensaje);
+    const savedMensaje = await this.mensajeRepository.save(mensaje);
+
+    // Emitir el mensaje nuevo a través del WebSocket
+    this.mensajeGateway.emitNewMessage(createMensajeDto.conversacion_id, {
+      mensaje_id: savedMensaje.mensaje_id,
+      contenido: savedMensaje.contenido,
+      fecha_envio: savedMensaje.fecha_envio,
+      usuario_id: savedMensaje.usuario_id,
+    });
+
+    return savedMensaje;
   }
 
-  // Obtiene todos los mensajes de una conversación y agrega información de usuario
+  /**
+   * Obtiene todos los mensajes de una conversación con datos enriquecidos del usuario.
+   * @param conversacion_id ID de la conversación.
+   * @returns Lista de mensajes enriquecidos con información del usuario.
+   */
   async findAllByConversacion(conversacion_id: string): Promise<any[]> {
-    const mensajes = await this.mensajeRepository.find({
-      where: { conversacion_id },
-      order: { fecha_envio: 'ASC' },
-    });
+    const mensajes = await this.mensajeRepository
+      .createQueryBuilder('mensaje')
+      .where('mensaje.conversacion_id = :conversacion_id', { conversacion_id })
+      .leftJoinAndSelect('usuario', 'u', 'u.usuario_id = mensaje.usuario_id')
+      .orderBy('mensaje.fecha_envio', 'ASC')
+      .select([
+        'mensaje.mensaje_id',
+        'mensaje.contenido',
+        'mensaje.fecha_envio',
+        'mensaje.usuario_id',
+        'u.nombre',
+        'u.avatar',
+      ])
+      .getRawMany();
 
-    // Extrae IDs de usuario únicos de los mensajes
-    const usuarioIds = [...new Set(mensajes.map((mensaje) => mensaje.usuario_id))];
-    // Consulta los detalles de cada usuario
-    const usuarios = await this.usuarioService.findUsersByIds(usuarioIds);
-
-    // Retorna los mensajes con la información completa de cada usuario
-    return mensajes.map((mensaje) => {
-      const usuario = usuarios.find((user) => user.usuario_id === mensaje.usuario_id);
-      return {
-        mensaje_id: mensaje.mensaje_id,
-        contenido: mensaje.contenido,
-        fecha_envio: mensaje.fecha_envio,
-        usuario: {
-          usuario_id: mensaje.usuario_id,
-          nombre: usuario ? usuario.nombre : 'Usuario desconocido',
-          avatar: usuario ? usuario.avatar : null,
-        },
-      };
-    });
+    return mensajes.map((mensaje) => ({
+      mensaje_id: mensaje.mensaje_mensaje_id,
+      contenido: mensaje.mensaje_contenido,
+      fecha_envio: mensaje.mensaje_fecha_envio,
+      usuario: {
+        usuario_id: mensaje.mensaje_usuario_id,
+        nombre: mensaje.u_nombre || 'Usuario desconocido',
+        avatar: mensaje.u_avatar || null,
+      },
+    }));
   }
 }

@@ -3,12 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversacion } from './entities/conversacion.entity';
 import { CreateConversacionDto } from './dto/create-conversacion.dto';
+import { TipoConversacionService } from '../tipo-conversacion/tipo-conversacion.service';
+import { UserService } from 'src/users/users.service';
+import { Grupo } from 'src/admin/grupos/entities/grupo.entity';
 
 @Injectable()
 export class ConversacionService {
   constructor(
     @InjectRepository(Conversacion)
     private readonly conversacionRepository: Repository<Conversacion>,
+    @InjectRepository(Grupo)
+    private readonly grupoRepository: Repository<Grupo>,
+    private readonly tipoConversacionService: TipoConversacionService,
+    private usuarioRepository: UserService,
   ) {}
 
   /**
@@ -102,4 +109,64 @@ export class ConversacionService {
     conversacion.user_ids.push(...newUserIds.map(id => ({ id })));
     return this.conversacionRepository.save(conversacion);
   }
+
+  async getRecentConversations(usuario_id: string) {
+    const conversaciones = await this.conversacionRepository
+      .createQueryBuilder('conversacion')
+      .where('conversacion.user_ids @> :usuario', { usuario: JSON.stringify([{ id: usuario_id }]) })
+      .orderBy('conversacion.fecha_creacion', 'DESC')
+      .getMany();
+  
+    return Promise.all(
+      conversaciones.map(async (conversacion) => {
+        const tipo = await this.tipoConversacionService.findById(conversacion.tipo_conversacion_id);
+  
+        if (!tipo) {
+          return {
+            ...conversacion,
+            nombre: 'Desconocido',
+            avatar: null,
+          };
+        }
+  
+        if (tipo.nombre === 'privado') {
+          const otroUsuarioId = conversacion.user_ids
+            .map((user) => user.id)
+            .find((id) => id !== usuario_id);
+  
+          if (!otroUsuarioId) {
+            return {
+              ...conversacion,
+              nombre: 'Usuario desconocido',
+              avatar: null,
+            };
+          }
+  
+          const usuario = await this.usuarioRepository.findOne(otroUsuarioId);
+          return {
+            ...conversacion,
+            nombre: usuario?.nombre || 'Usuario desconocido',
+            avatar: usuario?.avatar || null, // Aquí se retorna directamente el texto de la URL
+          };
+        }
+  
+        if (tipo.nombre === 'grupo') {
+          const grupo = await this.grupoRepository.findOne({ where: { conversacion_id: conversacion.conversacion_id } });
+          return {
+            ...conversacion,
+            nombre: grupo?.nombre || 'Grupo sin nombre',
+            avatar: null, // Indica que el frontend debe usar el ícono predeterminado
+          };
+        }
+  
+        return {
+          ...conversacion,
+          nombre: 'Desconocido',
+          avatar: null,
+        };
+      }),
+    );
+  }
+  
+    
 }

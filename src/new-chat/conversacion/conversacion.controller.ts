@@ -35,6 +35,16 @@ export class ConversacionController {
     return this.conversacionService.addUsersToConversation(conversacionId, userIds);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('recent')
+  async getRecentConversations(@Req() req: any) {
+    const usuario_id = req.user.usuario_id; // Extraer el usuario autenticado
+    if (!usuario_id) {
+      throw new Error('Usuario no autenticado');
+    }
+    return this.conversacionService.getRecentConversations(usuario_id);
+  }
+
   @Get()
   findAll() {
     return this.conversacionService.findAll();
