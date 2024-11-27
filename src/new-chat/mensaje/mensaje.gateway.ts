@@ -5,16 +5,11 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   MessageBody,
-
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MensajeService } from './mensaje.service';
-import { WsJwtAuthGuard } from 'src/auth/ws-jwt.guard';
-import { UseGuards } from '@nestjs/common';
-
 
 @WebSocketGateway({ cors: { origin: '*' } })
-@UseGuards(WsJwtAuthGuard) 
 export class MensajeGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -22,18 +17,17 @@ export class MensajeGateway implements OnGatewayConnection, OnGatewayDisconnect 
   constructor(private readonly mensajeService: MensajeService) {}
 
   async handleConnection(client: Socket) {
-    const usuario = client.data.usuario; // Datos del usuario autenticado
+    console.log(`Intentando conectar cliente: ${client.id}`);
+    const usuario_id = client.handshake.query.usuario_id as string;
 
-    console.log(`Cliente conectado: ${client.id}, Usuario: ${usuario.usuario_id}`);
-
-    const { conversacionId } = client.handshake.query;
-
-    if (conversacionId) {
-      client.join(conversacionId as string);
-      console.log(`Cliente ${client.id} unido a la sala ${conversacionId}`);
-    } else {
-      console.warn(`Cliente ${client.id} no proporcionó un conversacionId.`);
+    if (!usuario_id) {
+      console.error(`Cliente sin usuario_id rechazado: ${client.id}`);
+      client.disconnect();
+      return;
     }
+
+    client.data = { usuario_id };
+    console.log(`Cliente conectado: ${client.id}, Usuario: ${usuario_id}`);
   }
 
   handleDisconnect(client: Socket) {
@@ -45,26 +39,43 @@ export class MensajeGateway implements OnGatewayConnection, OnGatewayDisconnect 
     client: Socket,
     @MessageBody() payload: { conversacion_id: string; contenido: any },
   ) {
-    const usuario_id = client.data.usuario?.usuario_id;
+    console.log('Payload recibido:', payload);
 
-    if (!usuario_id || !payload.conversacion_id || !payload.contenido) {
+    const usuario_id = client.data?.usuario_id;
+    if (!usuario_id) {
+      console.error('Cliente no autenticado. No se encontró usuario_id.');
+      client.emit('error', { message: 'No estás autenticado.' });
+      return;
+    }
+
+    if (!payload.conversacion_id || !payload.contenido) {
       console.error('Payload inválido:', payload);
-      client.emit('error', { message: 'Payload inválido. Falta conversacion_id o contenido.' });
+      client.emit('error', { message: 'Payload inválido.' });
       return;
     }
 
     try {
+      console.log('Guardando mensaje...');
       const nuevoMensaje = await this.mensajeService.create(
         { conversacion_id: payload.conversacion_id, contenido: payload.contenido },
         usuario_id,
       );
+      console.log('Mensaje guardado con éxito:', nuevoMensaje);
 
-      console.log(`Mensaje guardado en la conversación ${payload.conversacion_id}`);
-
-      this.server.to(payload.conversacion_id).emit('newMessage', nuevoMensaje);
+      this.emitirNuevoMensaje(payload.conversacion_id, nuevoMensaje);
     } catch (error) {
       console.error('Error al guardar el mensaje:', error.message);
-      client.emit('error', { message: 'No se pudo enviar el mensaje.' });
+      client.emit('error', { message: 'Error al guardar el mensaje.' });
     }
+  }
+
+  /**
+   * Método para emitir un nuevo mensaje a una sala específica.
+   * @param conversacion_id ID de la conversación.
+   * @param mensaje Mensaje a emitir.
+   */
+  emitirNuevoMensaje(conversacion_id: string, mensaje: any) {
+    console.log(`Emitiendo mensaje a la sala ${conversacion_id}:`, mensaje);
+    this.server.to(conversacion_id).emit('newMessage', mensaje);
   }
 }
