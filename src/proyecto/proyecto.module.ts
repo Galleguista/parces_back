@@ -11,5 +11,6 @@ import { UsersModule } from 'src/users/users.module';
   imports: [TypeOrmModule.forFeature([Proyecto]), ConversacionModule, RoleScopeModule, UsersModule],
   providers: [ProyectoService],
   controllers: [ProyectoController],
+  exports: [TypeOrmModule, ProyectoService]
 })
 export class ProyectoModule {}

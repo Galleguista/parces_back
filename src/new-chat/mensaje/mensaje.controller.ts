@@ -6,6 +6,7 @@ import {
   Get,
   Param,
   UseGuards,
+  NotFoundException,
 } from '@nestjs/common';
 import { MensajeService } from './mensaje.service';
 import { CreateMensajeDto } from './dto/create-mensaje.dto';
@@ -42,9 +43,14 @@ export class MensajeController {
     return nuevoMensaje;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':conversacionId')
-  async findAllByConversacion(@Param('conversacionId') conversacionId: string) {
-    console.log('Obteniendo mensajes para la conversación:', conversacionId);
-    return this.mensajeService.findAllByConversacion(conversacionId);
+  async getMessages(@Param('conversacionId') conversacionId: string) {
+    try {
+      return await this.mensajeService.getMessagesByConversation(conversacionId);
+    } catch (error) {
+      throw new NotFoundException('No se encontraron mensajes para esta conversación.');
+    }
   }
+  
 }

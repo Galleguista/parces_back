@@ -8,6 +8,9 @@ import { TipoConversacion } from '../tipo-conversacion/entities/tipo-conversacio
 import { Grupo } from 'src/admin/grupos/entities/grupo.entity';
 import { TipoConversacionService } from '../tipo-conversacion/tipo-conversacion.service';
 import { UsersModule } from 'src/users/users.module';
+import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
+import { TipoConversacionModule } from '../tipo-conversacion/tipo-conversacion.module';
+import { ProyectoModule } from 'src/proyecto/proyecto.module';
 
 @Module({
   imports: [
@@ -16,8 +19,11 @@ import { UsersModule } from 'src/users/users.module';
       Usuario,
       TipoConversacion,
       Grupo,
+      Proyecto
     ]),
-    UsersModule
+    UsersModule,
+    
+
   ],
   controllers: [ConversacionController],
   providers: [

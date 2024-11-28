@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Mensaje } from './entities/mensaje.entity';
 import { CreateMensajeDto } from './dto/create-mensaje.dto';
+import { Usuario } from 'src/users/entity/usuario.entity';
 
 @Injectable()
 export class MensajeService {
   constructor(
     @InjectRepository(Mensaje)
     private readonly mensajeRepository: Repository<Mensaje>,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
   async create(createMensajeDto: CreateMensajeDto, usuario_id: string): Promise<Mensaje> {
@@ -24,10 +27,32 @@ export class MensajeService {
     return await this.mensajeRepository.save(mensaje);
   }
 
-  async findAllByConversacion(conversacion_id: string): Promise<Mensaje[]> {
-    return await this.mensajeRepository.find({
-      where: { conversacion_id },
+  async getMessagesByConversation(conversacionId: string) {
+    const mensajes = await this.mensajeRepository.find({
+      where: { conversacion_id: conversacionId },
       order: { fecha_envio: 'ASC' },
     });
+
+    if (!mensajes || mensajes.length === 0) {
+      throw new NotFoundException('No se encontraron mensajes para esta conversación.');
+    }
+
+    // Obtenemos los IDs únicos de los usuarios que enviaron mensajes
+    const usuarioIds = [...new Set(mensajes.map((mensaje) => mensaje.usuario_id))];
+
+    // Buscamos los nombres de los usuarios en la base de datos
+    const usuarios = await this.usuarioRepository.findByIds(usuarioIds);
+
+    // Mapeamos los usuarios por su ID para un acceso más rápido
+    const usuarioMap = usuarios.reduce((acc, usuario) => {
+      acc[usuario.usuario_id] = usuario.nombre;
+      return acc;
+    }, {});
+
+    // Mapeamos los mensajes para incluir el nombre del usuario
+    return mensajes.map((mensaje) => ({
+      ...mensaje,
+      nombre_usuario: usuarioMap[mensaje.usuario_id] || 'Usuario desconocido',
+    }));
   }
 }

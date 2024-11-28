@@ -6,6 +6,8 @@ import { CreateConversacionDto } from './dto/create-conversacion.dto';
 import { TipoConversacionService } from '../tipo-conversacion/tipo-conversacion.service';
 import { UserService } from 'src/users/users.service';
 import { Grupo } from 'src/admin/grupos/entities/grupo.entity';
+import { ProyectoService } from 'src/proyecto/proyecto.service';
+import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 
 @Injectable()
 export class ConversacionService {
@@ -15,6 +17,8 @@ export class ConversacionService {
     @InjectRepository(Grupo)
     private readonly grupoRepository: Repository<Grupo>,
     private readonly tipoConversacionService: TipoConversacionService,
+    @InjectRepository(Proyecto)
+    private readonly proyectoRepository: Repository<Proyecto>,
     private usuarioRepository: UserService,
   ) {}
 
@@ -65,30 +69,29 @@ export class ConversacionService {
    * @returns La conversación existente o una nueva.
    */
   async createOrGetPrivateChat(currentUserId: string, memberId: string): Promise<Conversacion> {
-    // Verifica si ya existe una conversación privada entre los dos usuarios
-    const userIdsJson = JSON.stringify([{ id: currentUserId }, { id: memberId }]);
-
+    // Normaliza los IDs de los usuarios
+    const userIds = [currentUserId, memberId].sort();
+    const userIdsJson = JSON.stringify(userIds.map((id) => ({ id })));
+  
     let conversacion = await this.conversacionRepository
       .createQueryBuilder('conversacion')
-      .where('conversacion.tipo_conversacion_id = :tipoId', { tipoId: '7c4fc440-7281-40d3-a96e-303e2bb8cd84' }) // ID de conversación privada
-      .andWhere('conversacion.user_ids @> :userIds1', { userIds1: userIdsJson })
-      .orWhere('conversacion.user_ids @> :userIds2', {
-        userIds2: JSON.stringify([{ id: memberId }, { id: currentUserId }]),
-      })
+      .where('conversacion.tipo_conversacion_id = :tipoId', { tipoId: '7c4fc440-7281-40d3-a96e-303e2bb8cd84' })
+      .andWhere('conversacion.user_ids @> :userIds', { userIds: userIdsJson })
       .getOne();
-
-    // Si no existe, crearla
+  
+    // Si no existe, crear una nueva conversación
     if (!conversacion) {
       const nuevaConversacion = this.conversacionRepository.create({
         tipo_conversacion_id: '7c4fc440-7281-40d3-a96e-303e2bb8cd84',
-        user_ids: [{ id: currentUserId }, { id: memberId }],
+        user_ids: userIds.map((id) => ({ id })),
         fecha_creacion: new Date(),
       });
       conversacion = await this.conversacionRepository.save(nuevaConversacion);
     }
-
+  
     return conversacion;
   }
+  
 
   /**
    * Agrega usuarios a una conversación existente.
@@ -158,6 +161,16 @@ export class ConversacionService {
             avatar: null, // Indica que el frontend debe usar el ícono predeterminado
           };
         }
+
+        if (tipo.nombre === 'proyecto') {
+          const proyecto = await this.proyectoRepository.findOne({ where: { conversacion_id: conversacion.conversacion_id } });
+          return {
+            ...conversacion,
+            nombre: proyecto?.nombre || 'Proyecto sin nombre',
+            avatar: null, // Los proyectos no tienen avatar por defecto
+          };
+        }
+        
   
         return {
           ...conversacion,
@@ -167,6 +180,4 @@ export class ConversacionService {
       }),
     );
   }
-  
-    
 }

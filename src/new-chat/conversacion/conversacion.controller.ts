@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Body, UseGuards, Req, BadRequestException } from '@nestjs/common';
 import { ConversacionService } from './conversacion.service';
 import { CreateConversacionDto } from './dto/create-conversacion.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -23,8 +23,16 @@ export class ConversacionController {
   @Post('private-chat')
   async createOrGetPrivateChat(@Req() req: any, @Body('memberId') memberId: string) {
     const currentUserId = req.user.usuario_id;
-    return await this.conversacionService.createOrGetPrivateChat(currentUserId, memberId);
+    
+    if (!memberId) {
+      throw new BadRequestException('El ID del miembro es obligatorio.');
+    }
+  
+    const conversacion = await this.conversacionService.createOrGetPrivateChat(currentUserId, memberId);
+  
+    return { conversacion_id: conversacion.conversacion_id };
   }
+  
 
   @UseGuards(JwtAuthGuard)
   @Put(':conversacion_id/users')
