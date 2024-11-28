@@ -1,19 +1,22 @@
-import { Controller, Get, Post, Param, Body, UseGuards, Request } from '@nestjs/common';
-import { CreateGrupoDto } from './dto/create-grupo.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { GrupoService } from './grupos.service';
+import { CreateGrupoDto } from './dto/create-grupo.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('grupos')
 export class GrupoController {
   constructor(private readonly grupoService: GrupoService) {}
 
-  /**
-   * Crea un nuevo grupo junto con su conversación asociada, incluyendo al creador como administrador.
-   * @param createGrupoDto Datos del grupo.
-   * @param body Incluye el tipo de conversación para la conversación asociada.
-   * @param req Información del usuario autenticado extraída del JWT.
-   * @returns Grupo creado con la conversación asociada.
-   */
   @UseGuards(JwtAuthGuard)
   @Post()
   create(
@@ -21,45 +24,25 @@ export class GrupoController {
     @Body('tipo_conversacion_id') tipo_conversacion_id: string,
     @Request() req: any,
   ) {
-    const usuario_id = req.user.usuario_id; // Extrae el ID del usuario autenticado desde el JWT
+    const usuario_id = req.user.usuario_id; // Usuario autenticado
     return this.grupoService.create(createGrupoDto, tipo_conversacion_id, usuario_id);
   }
 
-  /**
-   * Obtiene todos los grupos.
-   * @returns Lista de todos los grupos.
-   */
   @Get()
   findAll() {
     return this.grupoService.findAll();
   }
 
-  /**
-   * Obtiene un grupo específico por su ID.
-   * @param id ID del grupo.
-   * @returns Información del grupo.
-   */
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.grupoService.findOne(id);
   }
 
-  /**
-   * Obtiene los miembros de un grupo basado en el `conversacion_id` asociado.
-   * @param grupo_id ID del grupo.
-   * @returns Lista de usuarios miembros de la conversación, incluyendo el administrador.
-   */
   @Get(':grupo_id/miembros')
   getMembersOfGrupo(@Param('grupo_id') grupo_id: string) {
     return this.grupoService.getMembersOfGrupo(grupo_id);
   }
 
-  /**
-   * Añade un miembro a la conversación de un grupo y actualiza el JSON `user_ids`.
-   * @param grupo_id ID del grupo.
-   * @param body Contiene el ID del usuario a añadir.
-   * @returns Conversación actualizada.
-   */
   @UseGuards(JwtAuthGuard)
   @Post(':grupo_id/miembro')
   addMember(
@@ -67,8 +50,30 @@ export class GrupoController {
     @Body() body: { usuario_id: string },
     @Request() req: any,
   ) {
-    const admin_id = req.user.usuario_id; // ID del usuario autenticado
+    const admin_id = req.user.usuario_id;
     return this.grupoService.addMember(grupo_id, body.usuario_id, admin_id);
   }
-  
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':grupo_id/miembro/:usuario_id')
+  updateMember(
+    @Param('grupo_id') grupo_id: string,
+    @Param('usuario_id') usuario_id: string,
+    @Body() updateData: any,
+    @Request() req: any,
+  ) {
+    const admin_id = req.user.usuario_id;
+    return this.grupoService.updateMember(grupo_id, usuario_id, updateData, admin_id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':grupo_id/miembro/:usuario_id')
+  removeMember(
+    @Param('grupo_id') grupo_id: string,
+    @Param('usuario_id') usuario_id: string,
+    @Request() req: any,
+  ) {
+    const admin_id = req.user.usuario_id;
+    return this.grupoService.removeMember(grupo_id, usuario_id, admin_id);
+  }
 }
