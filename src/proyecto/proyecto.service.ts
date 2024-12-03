@@ -6,6 +6,7 @@ import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { Conversacion } from 'src/new-chat/conversacion/entities/conversacion.entity';
 import { Usuario } from 'src/users/entity/usuario.entity';
+import { Bitacora } from './bitacora/entities/bitacora.entity';
 
 @Injectable()
 export class ProyectoService {
@@ -16,6 +17,8 @@ export class ProyectoService {
     private readonly conversacionRepository: Repository<Conversacion>,
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+    @InjectRepository(Bitacora)
+    private readonly bitacoraRepository: Repository<Bitacora>,
   ) {}
 
   // Crear proyecto y conversación inicial
@@ -179,6 +182,21 @@ export class ProyectoService {
     if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
     return proyecto;
   }
+
+  async addBitacora(proyecto_id: string, descripcion: string, complemento?: any): Promise<Bitacora> {
+    const bitacora = this.bitacoraRepository.create({ proyecto_id, descripcion, complemento });
+    return this.bitacoraRepository.save(bitacora);
+  }
+
+  // Obtener todas las entradas de la bitácora para un proyecto
+  async getBitacoras(proyecto_id: string): Promise<Bitacora[]> {
+    const bitacoras = await this.bitacoraRepository.find({
+      where: { proyecto_id },
+      order: { fecha: 'ASC' },
+    });
+    return bitacoras; 
+  }
+  
 
   // Eliminar proyecto
   async remove(id: string): Promise<void> {

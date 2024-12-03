@@ -80,6 +80,27 @@ export class ProyectoController {
   findAll() {
     return this.proyectoService.findAll();
   }
+  
+  @Post(':proyecto_id/bitacora')
+  async addBitacora(
+    @Param('proyecto_id') proyecto_id: string,
+    @Body('descripcion') descripcion: string,
+    @Body('complemento') complemento?: any,
+  ) {
+    console.log('proyecto_id recibido desde el frontend es este:', proyecto_id)
+    return this.proyectoService.addBitacora(proyecto_id, descripcion, complemento);
+  }
+
+  // Endpoint para obtener todas las entradas de la bitácora
+  @Get(':proyecto_id/bitacora')
+  async getBitacoras(@Param('proyecto_id') proyecto_id: string) {
+    console.log('GET /:proyecto_id/bitacora', proyecto_id);
+    const bitacoras = await this.proyectoService.getBitacoras(proyecto_id);
+    console.log('Resultados:', bitacoras);
+    return bitacoras;
+  }
+  
+  
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -96,4 +117,5 @@ export class ProyectoController {
   remove(@Param('id') id: string) {
     return this.proyectoService.remove(id);
   }
+    // Endpoint para añadir una entrada a la bitácora
 }
