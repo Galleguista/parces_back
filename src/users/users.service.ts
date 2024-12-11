@@ -13,14 +13,12 @@ export class UserService {
     private usuarioRepository: Repository<Usuario>,
   ) {}
 
-  // Obtener todos los usuarios`
   async findAll(): Promise<Usuario[]> {
     return this.usuarioRepository.find({
       order: { nombre: 'ASC' },
     });
   }
 
-  // Obtener un usuario por su ID
   async findOne(userId: string): Promise<Usuario> {
     const user = await this.usuarioRepository.findOne({ where: { usuario_id: userId } });
     if (!user) {
@@ -29,7 +27,6 @@ export class UserService {
     return user;
   }
 
-  // Crear un nuevo usuario
   async create(createUserDto: CreateUserDto): Promise<Usuario> {
     const { password, ...userData } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,7 +39,6 @@ export class UserService {
     return this.usuarioRepository.save(newUser);
   }
 
-  // Actualizar un usuario
   async update(id: string, updateUserDto: UpdateUserDto): Promise<Usuario> {
     const user = await this.findOne(id);
 
@@ -50,7 +46,6 @@ export class UserService {
     return this.usuarioRepository.save(user);
   }
 
-  // Eliminar un usuario
   async remove(id: string): Promise<void> {
     const deleteResult = await this.usuarioRepository.delete(id);
     if (deleteResult.affected === 0) {
@@ -62,7 +57,6 @@ export class UserService {
     return this.usuarioRepository.findOne({ where: { usuario } });
   }
   
-
   async findUsersByIds(userIds: string[]) {
     return this.usuarioRepository.find({
       where: { usuario_id: In(userIds) },
@@ -82,8 +76,6 @@ export class UserService {
     );
   }
   
-
-  // Actualizar avatar del usuario
   async updateAvatar(id: string, avatarPath: string): Promise<Usuario> {
     const user = await this.findOne(id);
     user.avatar = avatarPath;

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile, BadRequestException, Query } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile, BadRequestException, Query, NotFoundException } from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -7,6 +7,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/multer.config'; 
 import { ApiTags } from '@nestjs/swagger';
 import { FilesService } from 'src/system/files/files.service';
+import { RoleService } from 'src/system/role/role.service';
 
 @ApiTags('usuarios')
 @Controller('usuarios')
@@ -14,6 +15,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UserService,
     private readonly filesService: FilesService, 
+    private readonly roleService: RoleService
   ) {}
 
   @Post('register')
@@ -91,20 +93,30 @@ async updateProfile(
 }
 
 
-  @UseGuards(JwtAuthGuard)
-  @Get('me')
-  async getMe(@Request() req: any) {
-    const userId = req.user.usuario_id;
-    const user = await this.usersService.findOne(userId);
 
-    if (user.avatar) {
-      return {
-        ...user,
-        avatar: this.filesService.getFileUrl(user.avatar), 
-      };
-    }
-    return user;
+@UseGuards(JwtAuthGuard)
+@Get('me')
+async getMe(@Request() req: any) {
+  const userId = req.user.usuario_id;
+  const user = await this.usersService.findOne(userId);
+  const role = await this.roleService.findRoleByUserId(userId);  // Obtener el rol del usuario
+
+  if (!role) {
+    throw new NotFoundException('Role not found for the user');
   }
+
+  const isAdmin = role.role_name === 'Administrador';  // Comprobar si el usuario es administrador
+
+  const result = {
+    ...user,
+    isAdmin: isAdmin,
+    avatar: user.avatar ? this.filesService.getFileUrl(user.avatar) : undefined,
+  };
+
+  return result;
+}
+
+
 
   @UseGuards(JwtAuthGuard)
   @Get()

@@ -22,54 +22,27 @@ export class ConversacionService {
     private usuarioRepository: UserService,
   ) {}
 
-  /**
-   * Crea una nueva conversación.
-   * @param createConversacionDto Datos de la conversación.
-   * @returns La conversación creada.
-   */
   async create(createConversacionDto: CreateConversacionDto): Promise<Conversacion> {
     const nuevaConversacion = this.conversacionRepository.create(createConversacionDto);
     return await this.conversacionRepository.save(nuevaConversacion);
   }
 
-  /**
-   * Obtiene una conversación por ID.
-   * @param id ID de la conversación.
-   * @returns La conversación encontrada.
-   */
   async findOne(id: string): Promise<Conversacion> {
     const conversacion = await this.conversacionRepository.findOne({ where: { conversacion_id: id } });
     if (!conversacion) throw new NotFoundException(`No se encontró la conversación con ID ${id}`);
     return conversacion;
   }
 
-  /**
-   * Obtiene todas las conversaciones.
-   * @returns Lista de conversaciones.
-   */
   async findAll(): Promise<Conversacion[]> {
     return await this.conversacionRepository.find();
   }
 
-  /**
-   * Verifica si un usuario es miembro de una conversación.
-   * @param conversacionId ID de la conversación.
-   * @param userId ID del usuario.
-   * @returns Verdadero si el usuario es miembro, falso si no.
-   */
   async isUserMember(conversacionId: string, userId: string): Promise<boolean> {
     const conversacion = await this.findOne(conversacionId);
     return conversacion.user_ids.some(member => member.id === userId);
   }
 
-  /**
-   * Crea o recupera una conversación privada entre dos usuarios.
-   * @param currentUserId ID del usuario autenticado.
-   * @param memberId ID del otro usuario.
-   * @returns La conversación existente o una nueva.
-   */
   async createOrGetPrivateChat(currentUserId: string, memberId: string): Promise<Conversacion> {
-    // Normaliza los IDs de los usuarios
     const userIds = [currentUserId, memberId].sort();
     const userIdsJson = JSON.stringify(userIds.map((id) => ({ id })));
   
@@ -79,7 +52,6 @@ export class ConversacionService {
       .andWhere('conversacion.user_ids @> :userIds', { userIds: userIdsJson })
       .getOne();
   
-    // Si no existe, crear una nueva conversación
     if (!conversacion) {
       const nuevaConversacion = this.conversacionRepository.create({
         tipo_conversacion_id: '7c4fc440-7281-40d3-a96e-303e2bb8cd84',
@@ -92,13 +64,6 @@ export class ConversacionService {
     return conversacion;
   }
   
-
-  /**
-   * Agrega usuarios a una conversación existente.
-   * @param conversacionId ID de la conversación.
-   * @param userIds IDs de los usuarios a agregar.
-   * @returns La conversación actualizada.
-   */
   async addUsersToConversation(conversacionId: string, userIds: string[]): Promise<Conversacion> {
     const conversacion = await this.findOne(conversacionId);
 
@@ -149,7 +114,7 @@ export class ConversacionService {
           return {
             ...conversacion,
             nombre: usuario?.nombre || 'Usuario desconocido',
-            avatar: usuario?.avatar || null, // Aquí se retorna directamente el texto de la URL
+            avatar: usuario?.avatar || null,
           };
         }
   
@@ -158,7 +123,7 @@ export class ConversacionService {
           return {
             ...conversacion,
             nombre: grupo?.nombre || 'Grupo sin nombre',
-            avatar: null, // Indica que el frontend debe usar el ícono predeterminado
+            avatar: null, 
           };
         }
 
@@ -167,7 +132,7 @@ export class ConversacionService {
           return {
             ...conversacion,
             nombre: proyecto?.nombre || 'Proyecto sin nombre',
-            avatar: null, // Los proyectos no tienen avatar por defecto
+            avatar: null,
           };
         }
         
