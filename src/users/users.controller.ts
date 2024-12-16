@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile, BadRequestException, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Request, Put, UseInterceptors, UploadedFile, BadRequestException, Query, NotFoundException, Param, Delete } from '@nestjs/common';
 import { UserService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -92,7 +92,23 @@ async updateProfile(
   return updatedUser;
 }
 
-
+@UseGuards(JwtAuthGuard)
+@Put(':id')
+async updateUser(
+  @Param('id') id: string,
+  @Body() updateUserDto: UpdateUserDto
+) {
+  try {
+    const updatedUser = await this.usersService.update(id, updateUserDto);
+    return {
+      success: true,
+      message: 'Datos del usuario actualizados correctamente.',
+      updatedUser,
+    };
+  } catch (error) {
+    throw new BadRequestException('Error al actualizar el usuario.');
+  }
+}
 
 @UseGuards(JwtAuthGuard)
 @Get('me')
@@ -118,9 +134,23 @@ async getMe(@Request() req: any) {
 
 
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get()
   async getAllUsers() {
     return this.usersService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string) {
+    try {
+      await this.usersService.remove(id);
+      return {
+        success: true,
+        message: 'Usuario eliminado correctamente.'
+      };
+    } catch (error) {
+      throw new NotFoundException('Usuario no encontrado.');
+    }
   }
 }

@@ -36,11 +36,10 @@ export class ProyectoController {
     @Body('usuario_id') usuarioId: string,
     @Request() req: any,
   ) {
-    const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+    const currentUserId = req.user.usuario_id; 
     return this.proyectoService.addMember(proyectoId, usuarioId, currentUserId);
   }
 
-  // Obtener miembro por ID
   @UseGuards(JwtAuthGuard)
   @Get(':proyecto_id/miembro/:usuario_id')
   async getMember(
@@ -60,7 +59,7 @@ export class ProyectoController {
     @Body() updateData: any,
     @Request() req: any,
   ) {
-    const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+    const currentUserId = req.user.usuario_id;
     return this.proyectoService.updateMember(proyectoId, usuarioId, updateData, currentUserId);
   }
 
