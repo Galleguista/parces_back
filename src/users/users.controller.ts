@@ -40,8 +40,6 @@ export class UsersController {
       if (file) {
         const uploadResult = await this.filesService.handleFileUpload(file, req);
         avatarPath = uploadResult.relativePath; 
-
-        // Aquí almacenamos la URL en la base de datos
         createUserDto.avatar = avatarPath;
       }
 
@@ -115,13 +113,13 @@ async updateUser(
 async getMe(@Request() req: any) {
   const userId = req.user.usuario_id;
   const user = await this.usersService.findOne(userId);
-  const role = await this.roleService.findRoleByUserId(userId);  // Obtener el rol del usuario
+  const role = await this.roleService.findRoleByUserId(userId); 
 
   if (!role) {
     throw new NotFoundException('Role not found for the user');
   }
 
-  const isAdmin = role.role_name === 'Administrador';  // Comprobar si el usuario es administrador
+  const isAdmin = role.role_name === 'Administrador'; 
 
   const result = {
     ...user,
