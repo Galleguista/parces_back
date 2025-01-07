@@ -131,6 +131,29 @@ async getMe(@Request() req: any) {
 }
 
 
+// @UseGuards(JwtAuthGuard)
+@Put(':id/password')
+async updatePassword(
+  @Param('id') id: string,
+  @Body('password') newPassword: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    if (!newPassword || newPassword.trim() === '') {
+      throw new BadRequestException('La contraseña no puede estar vacía.');
+    }
+
+    await this.usersService.updatePassword(id, newPassword);
+    return {
+      success: true,
+      message: 'Contraseña actualizada correctamente.',
+    };
+  } catch (error) {
+    console.error('Error al actualizar la contraseña:', error);
+    throw new BadRequestException('Error al actualizar la contraseña.');
+  }
+}
+
+
 
   // @UseGuards(JwtAuthGuard)
   @Get()
@@ -138,17 +161,19 @@ async getMe(@Request() req: any) {
     return this.usersService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async deleteUser(@Param('id') id: string) {
+  async deleteUser(@Param('id') id: string): Promise<{ success: boolean; message: string }> {
     try {
+      console.log('Recibido ID para eliminar:', id); // Log adicional
       await this.usersService.remove(id);
       return {
         success: true,
-        message: 'Usuario eliminado correctamente.'
+        message: 'Usuario eliminado correctamente.',
       };
     } catch (error) {
-      throw new NotFoundException('Usuario no encontrado.');
+      console.error('Error al eliminar el usuario:', error.message); // Log adicional
+      throw new NotFoundException(error.message || 'Error al eliminar el usuario.');
     }
   }
 }

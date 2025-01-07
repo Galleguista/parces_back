@@ -37,19 +37,15 @@ export class MensajeService {
       throw new NotFoundException('No se encontraron mensajes para esta conversación.');
     }
 
-    // Obtenemos los IDs únicos de los usuarios que enviaron mensajes
     const usuarioIds = [...new Set(mensajes.map((mensaje) => mensaje.usuario_id))];
 
-    // Buscamos los nombres de los usuarios en la base de datos
     const usuarios = await this.usuarioRepository.findByIds(usuarioIds);
 
-    // Mapeamos los usuarios por su ID para un acceso más rápido
     const usuarioMap = usuarios.reduce((acc, usuario) => {
       acc[usuario.usuario_id] = usuario.nombre;
       return acc;
     }, {});
 
-    // Mapeamos los mensajes para incluir el nombre del usuario
     return mensajes.map((mensaje) => ({
       ...mensaje,
       nombre_usuario: usuarioMap[mensaje.usuario_id] || 'Usuario desconocido',

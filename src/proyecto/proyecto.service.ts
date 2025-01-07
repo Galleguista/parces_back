@@ -21,7 +21,6 @@ export class ProyectoService {
     private readonly bitacoraRepository: Repository<Bitacora>,
   ) {}
 
-  // Crear proyecto y conversación inicial
   async create(createProyectoDto: CreateProyectoDto, usuario_id: string): Promise<Proyecto> {
     const conversacion = this.conversacionRepository.create({
       user_ids: [{ id: usuario_id }],
@@ -39,12 +38,10 @@ export class ProyectoService {
     return this.proyectoRepository.save(newProyecto);
   }
 
-  // Obtener todos los proyectos
   async findAll(): Promise<Proyecto[]> {
     return this.proyectoRepository.find();
   }
 
-  // Obtener administrador y miembros del proyecto
   async getMembersWithAdmin(proyecto_id: string) {
     const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id } });
     if (!proyecto) throw new NotFoundException(`Proyecto con ID ${proyecto_id} no encontrado.`);
@@ -66,7 +63,6 @@ export class ProyectoService {
     return { administrador, miembros };
   }
 
-  // Obtener miembro específico del proyecto
   async getMember(proyecto_id: string, usuario_id: string) {
     const proyecto = await this.findOne(proyecto_id);
 
@@ -84,7 +80,6 @@ export class ProyectoService {
     });
   }
 
-  // Actualizar proyecto
   async update(id: string, updateProyectoDto: UpdateProyectoDto): Promise<Proyecto> {
     const proyecto = await this.proyectoRepository.preload({
       proyecto_id: id,
@@ -96,11 +91,9 @@ export class ProyectoService {
     return this.proyectoRepository.save(proyecto);
   }
 
-  // Añadir miembro al proyecto
   async addMember(proyecto_id: string, usuario_id: string, admin_id: string) {
     const proyecto = await this.findOne(proyecto_id);
 
-    // Validar que el usuario autenticado sea el administrador
     if (proyecto.usuario_id !== admin_id) {
       throw new ForbiddenException('No tienes permisos para añadir miembros a este proyecto.');
     }
@@ -113,7 +106,6 @@ export class ProyectoService {
       throw new NotFoundException(`No se encontró la conversación para el proyecto con ID ${proyecto_id}`);
     }
 
-    // Verificar si el usuario ya es miembro
     const isAlreadyMember = conversacion.user_ids.some(user => user.id === usuario_id);
     if (isAlreadyMember) {
       throw new ConflictException('El usuario ya es miembro del proyecto.');
@@ -125,11 +117,10 @@ export class ProyectoService {
     return conversacion;
   }
 
-  // Actualizar miembro del proyecto
   async updateMember(
     proyecto_id: string,
     usuario_id: string,
-    updateData: any, // Por ejemplo, datos como el rol dentro del proyecto
+    updateData: any,
     admin_id: string,
   ) {
     const proyecto = await this.findOne(proyecto_id);
@@ -146,7 +137,6 @@ export class ProyectoService {
     const miembro = conversacion.user_ids.find(user => user.id === usuario_id);
     if (!miembro) throw new NotFoundException(`El usuario con ID ${usuario_id} no es miembro del proyecto.`);
 
-    // Actualiza la información del miembro (ejemplo: rol u otra información)
     Object.assign(miembro, updateData);
 
     await this.conversacionRepository.save(conversacion);
@@ -154,7 +144,6 @@ export class ProyectoService {
     return miembro;
   }
 
-  // Eliminar miembro del proyecto
   async removeMember(proyecto_id: string, usuario_id: string, admin_id: string) {
     const proyecto = await this.findOne(proyecto_id);
 
@@ -170,13 +159,12 @@ export class ProyectoService {
     const index = conversacion.user_ids.findIndex(user => user.id === usuario_id);
     if (index === -1) throw new NotFoundException(`El usuario con ID ${usuario_id} no es miembro del proyecto.`);
 
-    conversacion.user_ids.splice(index, 1); // Elimina el miembro
+    conversacion.user_ids.splice(index, 1);
     await this.conversacionRepository.save(conversacion);
 
     return { message: `Usuario con ID ${usuario_id} eliminado del proyecto.` };
   }
 
-  // Obtener proyecto por ID
   async findOne(id: string): Promise<Proyecto> {
     const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: id } });
     if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
@@ -188,7 +176,6 @@ export class ProyectoService {
     return this.bitacoraRepository.save(bitacora);
   }
 
-  // Obtener todas las entradas de la bitácora para un proyecto
   async getBitacoras(proyecto_id: string): Promise<Bitacora[]> {
     const bitacoras = await this.bitacoraRepository.find({
       where: { proyecto_id },
@@ -197,8 +184,6 @@ export class ProyectoService {
     return bitacoras; 
   }
   
-
-  // Eliminar proyecto
   async remove(id: string): Promise<void> {
     const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: id } });
     if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
