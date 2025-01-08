@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request, UnauthorizedException, Put } from '@nestjs/common';
 import { ProyectoService } from './proyecto.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
 import { UpdateProyectoDto } from './dto/update-proyecto.dto';
@@ -50,7 +50,6 @@ export class ProyectoController {
     return this.proyectoService.getMember(proyectoId, usuarioId);
   }
 
-  // Actualizar miembro (ejemplo: rol dentro del proyecto)
   @UseGuards(JwtAuthGuard)
   @Patch(':proyecto_id/miembro/:usuario_id')
   async updateMember(
@@ -71,7 +70,7 @@ export class ProyectoController {
     @Param('usuario_id') usuarioId: string,
     @Request() req: any,
   ) {
-    const currentUserId = req.user.usuario_id; // Usuario autenticado extraído del JWT
+    const currentUserId = req.user.usuario_id;
     return this.proyectoService.removeMember(proyectoId, usuarioId, currentUserId);
   }
 
@@ -106,10 +105,10 @@ export class ProyectoController {
     return this.proyectoService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard, ScopesGuard )
-  @Scopes('6cda5af1-baf9-4ee3-9e5c-bf66d7e3a43c')
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProyectoDto: UpdateProyectoDto) {
+  // @UseGuards(JwtAuthGuard, ScopesGuard )
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateProyectoDto: UpdateProyectoDto) {
     return this.proyectoService.update(id, updateProyectoDto);
   }
   @Delete(':id')
