@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Proyecto } from './entities/proyecto.entity';
@@ -7,6 +7,9 @@ import { UpdateProyectoDto } from './dto/update-proyecto.dto';
 import { Conversacion } from 'src/new-chat/conversacion/entities/conversacion.entity';
 import { Usuario } from 'src/users/entity/usuario.entity';
 import { Bitacora } from './bitacora/entities/bitacora.entity';
+import { Formulario } from './administracion/formularios/entities/formulario.entity';
+import { Postulaciones } from './administracion/postulaciones/entities/postulacione.entity';
+import { Respuestas } from './administracion/respuestas/entities/respuesta.entity';
 
 @Injectable()
 export class ProyectoService {
@@ -19,6 +22,12 @@ export class ProyectoService {
     private readonly usuarioRepository: Repository<Usuario>,
     @InjectRepository(Bitacora)
     private readonly bitacoraRepository: Repository<Bitacora>,
+    @InjectRepository(Formulario)
+    private readonly formularioRepository: Repository<Formulario>,
+    @InjectRepository(Postulaciones)
+    private readonly postulacionesRepository: Repository<Postulaciones>,
+    @InjectRepository(Respuestas)
+    private readonly respuestasRepository: Repository<Respuestas>,
   ) {}
 
   async create(createProyectoDto: CreateProyectoDto, usuario_id: string): Promise<Proyecto> {
@@ -189,4 +198,164 @@ export class ProyectoService {
     if (!proyecto) throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
     await this.proyectoRepository.remove(proyecto);
   }
+
+  async crearFormulario(proyectoId: string, preguntas: string[], usuarioId: string) {
+    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: proyectoId } });
+    if (!proyecto || proyecto.usuario_id !== usuarioId) {
+      throw new UnauthorizedException('No tienes permisos para añadir un formulario.');
+    }
+
+    const formulario = preguntas.map((pregunta) => ({
+      proyecto_id: proyectoId,
+      pregunta,
+    }));
+
+    return this.formularioRepository.save(formulario);
+  }
+
+  async listarPostulaciones(proyectoId: string, usuarioId: string) {
+    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: proyectoId } });
+    if (!proyecto || proyecto.usuario_id !== usuarioId) {
+      throw new UnauthorizedException('No tienes permisos para ver postulaciones.');
+    }
+
+    return this.postulacionesRepository.find({
+      where: { proyecto_id: proyectoId },
+      relations: ['usuario', 'respuestas.formulario'],
+    });
+  }
+
+  async crearPostulacion(
+    projectId: string,
+    usuarioId: string,
+    respuestas: { pregunta_id: string; respuesta: string }[],
+  ) {
+    // Verificar si el proyecto existe
+    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: projectId } });
+    if (!proyecto) {
+      throw new NotFoundException(`Proyecto con ID ${projectId} no encontrado.`);
+    }
+  
+    // Verificar si el usuario ya ha postulado
+    const yaPostulado = await this.postulacionesRepository.findOne({
+      where: { proyecto_id: projectId, usuario_id: usuarioId },
+    });
+    if (yaPostulado) {
+      throw new ConflictException('Ya has enviado una postulación para este proyecto.');
+    }
+  
+    // Crear la nueva postulación
+    const nuevaPostulacion = this.postulacionesRepository.create({
+      proyecto_id: projectId,
+      usuario_id: usuarioId,
+      estado: 'pendiente',
+    });
+    const postulacionGuardada = await this.postulacionesRepository.save(nuevaPostulacion);
+  
+    // Guardar las respuestas asociadas a la postulación
+    for (const respuesta of respuestas) {
+      await this.respuestasRepository.save({
+        postulacion_id: postulacionGuardada.postulacion_id,
+        formulario_id: respuesta.pregunta_id,
+        respuesta: respuesta.respuesta,
+      });
+    }
+  
+    return {
+      mensaje: 'Postulación creada con éxito.',
+      postulacionId: postulacionGuardada.postulacion_id,
+    };
+  }
+  
+
+  async cambiarEstadoPostulacion(proyectoId: string, postulacionId: string, estado: string, usuarioId: string) {
+    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: proyectoId } });
+    if (!proyecto || proyecto.usuario_id !== usuarioId) {
+      throw new UnauthorizedException('No tienes permisos para modificar postulaciones.');
+    }
+
+    const postulacion = await this.postulacionesRepository.findOne({ where: { postulacion_id: postulacionId } });
+    if (!postulacion) {
+      throw new NotFoundException('Postulación no encontrada.');
+    }
+
+    postulacion.estado = estado;
+    return this.postulacionesRepository.save(postulacion);
+  }
+  
+  async getPostulacionesDetalle(projectId: string, usuarioId: string) {
+    // Buscar el proyecto
+    const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: projectId } });
+  
+    if (!proyecto) {
+      throw new NotFoundException(`Proyecto con ID ${projectId} no encontrado.`);
+    }
+  
+    // Determinar si el usuario es propietario del proyecto
+    const esPropietario = proyecto.usuario_id === usuarioId;
+  
+    // Buscar las preguntas del formulario asociado al proyecto
+    const preguntas = await this.formularioRepository.find({ where: { proyecto_id: projectId } });
+  
+    // Caso: Sin preguntas en el formulario
+    if (preguntas.length === 0) {
+      return esPropietario
+        ? {
+            esPropietario: true,
+            esMiembro: false,
+            yaPostulado: false,
+            mensaje: 'No hay postulaciones abiertas para este proyecto.',
+            formulario: [],
+            postulaciones: [],
+          }
+        : {
+            esPropietario: false,
+            esMiembro: false,
+            yaPostulado: false,
+            mensaje: 'Este proyecto no tiene postulaciones disponibles en este momento.',
+            formulario: [],
+          };
+    }
+  
+    if (esPropietario) {
+      // Si es propietario, obtener todas las postulaciones y sus respuestas
+      const postulaciones = await this.postulacionesRepository.find({ where: { proyecto_id: projectId } });
+  
+      const postulacionesConRespuestas = await Promise.all(
+        postulaciones.map(async (postulacion) => {
+          const respuestas = await this.respuestasRepository.find({ where: { postulacion_id: postulacion.postulacion_id } });
+          return {
+            ...postulacion,
+            respuestas: respuestas.map((respuesta) => ({
+              pregunta: preguntas.find((p) => p.formulario_id === respuesta.formulario_id)?.pregunta || '',
+              respuesta: respuesta.respuesta,
+            })),
+          };
+        }),
+      );
+  
+      return {
+        esPropietario: true,
+        esMiembro: false,
+        yaPostulado: false,
+        mensaje: 'Gestión de postulaciones activas.',
+        formulario: preguntas,
+        postulaciones: postulacionesConRespuestas,
+      };
+    }
+  
+    // Verificar si el usuario ya ha postulado
+    const yaPostulado = await this.postulacionesRepository.findOne({ where: { proyecto_id: projectId, usuario_id: usuarioId } });
+  
+    return {
+      esPropietario: false,
+      esMiembro: false,
+      yaPostulado: !!yaPostulado,
+      mensaje: yaPostulado
+        ? 'Ya has enviado una postulación para este proyecto.'
+        : 'Este proyecto tiene postulaciones abiertas. Completa el formulario para postularte.',
+      formulario: preguntas,
+    };
+  }
+  
 }

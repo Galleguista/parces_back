@@ -116,4 +116,53 @@ export class ProyectoController {
     return this.proyectoService.remove(id);
   }
     // Endpoint para añadir una entrada a la bitácora
+
+    @UseGuards(JwtAuthGuard)
+    @Post(':proyecto_id/formulario')
+    async crearFormulario(
+      @Param('proyecto_id') proyectoId: string,
+      @Body('preguntas') preguntas: string[],
+      @Request() req: any,
+    ) {
+      return this.proyectoService.crearFormulario(proyectoId, preguntas, req.user.usuario_id);
+    }
+  
+    @UseGuards(JwtAuthGuard)
+    @Get(':proyecto_id/postulaciones')
+    async listarPostulaciones(@Param('proyecto_id') proyectoId: string, @Request() req: any) {
+      return this.proyectoService.listarPostulaciones(proyectoId, req.user.usuario_id);
+    }
+  
+    @UseGuards(JwtAuthGuard)
+    @Post(':id/postulaciones')
+    async crearPostulacion(
+      @Param('id') projectId: string,
+      @Request() req: any,
+      @Body() respuestasDto: { respuestas: { pregunta_id: string; respuesta: string }[] },
+    ) {
+      const usuarioId = req.user.usuario_id; // Extraer el usuario desde el JWT
+      return this.proyectoService.crearPostulacion(projectId, usuarioId, respuestasDto.respuestas);
+    }
+
+  
+    @UseGuards(JwtAuthGuard)
+    @Patch(':proyecto_id/postulacion/:postulacion_id')
+    async cambiarEstadoPostulacion(
+      @Param('proyecto_id') proyectoId: string,
+      @Param('postulacion_id') postulacionId: string,
+      @Body('estado') estado: string,
+      @Request() req: any,
+    ) {
+      return this.proyectoService.cambiarEstadoPostulacion(proyectoId, postulacionId, estado, req.user.usuario_id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get(':id/postulaciones-detalle')
+    async getPostulacionesDetalle(@Param('id') projectId: string, @Request() req: any) {
+      const usuarioId = req.user.usuario_id; // Extraemos el usuario actual desde el JWT
+      return this.proyectoService.getPostulacionesDetalle(projectId, usuarioId);
+    }
+    
+
+
 }
