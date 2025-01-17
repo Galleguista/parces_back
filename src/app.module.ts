@@ -13,7 +13,6 @@ import { LogrosModule } from './admin/logros/logros.module';
 import { ForosModule } from './admin/foros/foros.module';
 import { EventosModule } from './admin/eventos/eventos.module';
 import { FilesModule } from './system/files/files.module';
-import { NotificationsModule } from './system/notifications/notifications.module';
 import { TipoConversacionModule } from './new-chat/tipo-conversacion/tipo-conversacion.module';
 import { ConversacionModule } from './new-chat/conversacion/conversacion.module';
 import { MensajeModule } from './new-chat/mensaje/mensaje.module';
@@ -21,6 +20,7 @@ import { RoleModule } from './system/role/role.module';
 import { ScopeModule } from './system/scope/scope.module';
 import { RoleScopeModule } from './system/role-scope/role-scope.module';
 import { UserRoleModule } from './system/user-role/user-role.module';
+import { NotificacionesModule } from './system/notificaciones/notificaciones.module';
 
 
 @Module({
@@ -54,7 +54,6 @@ import { UserRoleModule } from './system/user-role/user-role.module';
     ForosModule,
     EventosModule,
     FilesModule,
-    NotificationsModule,
     TipoConversacionModule,
     ConversacionModule,
     MensajeModule,
@@ -62,6 +61,7 @@ import { UserRoleModule } from './system/user-role/user-role.module';
     ScopeModule,
     RoleScopeModule,
     UserRoleModule,
+    NotificacionesModule,
   ],
 })
 export class AppModule {}

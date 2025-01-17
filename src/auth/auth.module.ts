@@ -20,10 +20,13 @@ import { RoleScopeModule } from 'src/system/role-scope/role-scope.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60m' },
+        signOptions: {
+          expiresIn: '60m',
+          algorithm: 'HS256', 
+        },
       }),
       inject: [ConfigService],
-    }),
+    }),    
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],

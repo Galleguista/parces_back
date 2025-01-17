@@ -5,12 +5,14 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Usuario } from './entity/usuario.entity';
 import * as bcrypt from 'bcryptjs';
+import { NotificacionesService } from 'src/system/notificaciones/notificaciones.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(Usuario)
     private usuarioRepository: Repository<Usuario>,
+    private notificacionesService: NotificacionesService,
   ) {}
 
   async findAll(): Promise<any[]> {
@@ -84,7 +86,19 @@ export class UserService {
       password: hashedPassword,
     });
 
-    return this.usuarioRepository.save(newUser);
+    const savedUser = await this.usuarioRepository.save(newUser);
+
+    try {
+      await this.notificacionesService.crearNotificacion(
+        savedUser.usuario_id,
+        '¡Bienvenido a la plataforma! Nos alegra tenerte aquí.',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error al crear la notificación de bienvenida:', error);
+    }
+
+    return savedUser;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<Usuario> {

@@ -6,10 +6,12 @@ import { Usuario } from './entity/usuario.entity';
 import { FilesService } from 'src/system/files/files.service';
 import { RoleService } from 'src/system/role/role.service';
 import { Role } from 'src/system/role/entities/role.entity';
+import { NotificacionesService } from 'src/system/notificaciones/notificaciones.service';
+import { Notificacion } from 'src/system/notificaciones/entities/notificacione.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Usuario, Role])],
-  providers: [UserService, FilesService, RoleService],
+  imports: [TypeOrmModule.forFeature([Usuario, Role, Notificacion])],
+  providers: [UserService, FilesService, RoleService, NotificacionesService],
   controllers: [UsersController],
   exports: [TypeOrmModule, UserService], 
 })

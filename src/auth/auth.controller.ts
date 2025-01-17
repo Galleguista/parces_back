@@ -16,6 +16,26 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post('validate')
+  async validate(@Request() req) {
+    const token = req.headers.authorization?.split(' ')[1]; // Extraer el token del header Authorization
+    if (!token) {
+      throw new BadRequestException('El token es requerido.');
+    }
+    return this.authService.validateToken(token); // Llama al método de validación en el servicio
+  }
+
+  @Post('refresh')
+async refresh(@Body('refresh_token') refreshToken: string) {
+  if (!refreshToken) {
+    throw new BadRequestException('El refresh token es requerido.');
+  }
+
+  return this.authService.refreshToken(refreshToken);
+}
+
+
+  @UseGuards(JwtAuthGuard)
   @Post('ws-authenticate')
   async wsAuthenticate(@Body('token') token: string) {
     console.log('Token recibido para WebSocket:', token);
