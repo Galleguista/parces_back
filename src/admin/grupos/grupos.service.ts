@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Grupo } from './entities/grupo.entity';
 import { CreateGrupoDto } from './dto/create-grupo.dto';
 import { Conversacion } from 'src/new-chat/conversacion/entities/conversacion.entity';
@@ -49,6 +49,43 @@ export class GrupoService {
   // Obtener todos los grupos
   async findAll(): Promise<Grupo[]> {
     return this.grupoRepository.find();
+  }
+
+  async findAllByUser(usuarioId: string): Promise<Grupo[]> {
+    // Obtener los grupos donde el usuario es administrador
+    const gruposComoAdmin = await this.grupoRepository.find({
+      where: { usuario_id: usuarioId },
+    });
+  
+    // Buscar todas las conversaciones donde el usuario es miembro
+    const conversaciones = await this.conversacionRepository.find();
+    const conversacionesComoMiembro = conversaciones.filter((conversacion) =>
+      conversacion.user_ids.some((user) => user.id === usuarioId),
+    );
+  
+    // Obtener los IDs de esas conversaciones
+    const conversacionIds = conversacionesComoMiembro.map(
+      (conv) => conv.conversacion_id,
+    );
+  
+    if (conversacionIds.length === 0) {
+      // Si el usuario no pertenece a ninguna conversación, devolver solo los grupos como administrador
+      return gruposComoAdmin;
+    }
+  
+    // Buscar los grupos asociados a esas conversaciones utilizando In
+    const gruposComoMiembro = await this.grupoRepository.find({
+      where: { conversacion_id: In(conversacionIds) },
+    });
+  
+    // Combinar los resultados eliminando duplicados
+    const grupos = [...gruposComoAdmin, ...gruposComoMiembro];
+    const uniqueGrupos = grupos.filter(
+      (value, index, self) =>
+        index === self.findIndex((t) => t.grupo_id === value.grupo_id),
+    );
+  
+    return uniqueGrupos;
   }
 
   // Buscar un grupo por ID

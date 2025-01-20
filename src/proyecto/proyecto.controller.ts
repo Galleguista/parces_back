@@ -163,6 +163,27 @@ export class ProyectoController {
       return this.proyectoService.getPostulacionesDetalle(projectId, usuarioId);
     }
     
-
+    @UseGuards(JwtAuthGuard)
+    @Post(':proyecto_id/postulacion/:postulacion_id/aceptar')
+    async aceptarPostulacion(
+      @Param('proyecto_id') proyectoId: string,
+      @Param('postulacion_id') postulacionId: string,
+      @Request() req: any,
+    ) {
+      const usuarioId = req.user.usuario_id;
+      return this.proyectoService.aceptarPostulacion(proyectoId, postulacionId, usuarioId);
+    }
+    
+    @UseGuards(JwtAuthGuard)
+    @Delete(':proyecto_id/postulacion/:postulacion_id/rechazar')
+    async rechazarPostulacion(
+      @Param('proyecto_id') proyectoId: string,
+      @Param('postulacion_id') postulacionId: string,
+      @Request() req: any,
+    ) {
+      const usuarioId = req.user.usuario_id;
+      return this.proyectoService.rechazarPostulacion(proyectoId, postulacionId, usuarioId);
+    }
+    
 
 }

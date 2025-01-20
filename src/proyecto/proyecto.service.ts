@@ -10,6 +10,7 @@ import { Bitacora } from './bitacora/entities/bitacora.entity';
 import { Formulario } from './administracion/formularios/entities/formulario.entity';
 import { Postulaciones } from './administracion/postulaciones/entities/postulacione.entity';
 import { Respuestas } from './administracion/respuestas/entities/respuesta.entity';
+import { NotificacionesService } from 'src/system/notificaciones/notificaciones.service';
 
 @Injectable()
 export class ProyectoService {
@@ -28,6 +29,7 @@ export class ProyectoService {
     private readonly postulacionesRepository: Repository<Postulaciones>,
     @InjectRepository(Respuestas)
     private readonly respuestasRepository: Repository<Respuestas>,
+    private readonly notificacionesService: NotificacionesService,
   ) {}
 
   async create(createProyectoDto: CreateProyectoDto, usuario_id: string): Promise<Proyecto> {
@@ -45,6 +47,7 @@ export class ProyectoService {
     });
 
     return this.proyectoRepository.save(newProyecto);
+    
   }
 
   async findAll(): Promise<Proyecto[]> {
@@ -228,43 +231,46 @@ export class ProyectoService {
   async crearPostulacion(
     projectId: string,
     usuarioId: string,
-    respuestas: { pregunta_id: string; respuesta: string }[],
+    respuestasDto: { pregunta_id: string; respuesta: string }[],
   ) {
-    // Verificar si el proyecto existe
     const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: projectId } });
+
     if (!proyecto) {
       throw new NotFoundException(`Proyecto con ID ${projectId} no encontrado.`);
     }
-  
-    // Verificar si el usuario ya ha postulado
-    const yaPostulado = await this.postulacionesRepository.findOne({
+
+    // Verificar si el usuario ya se postuló
+    const postulacionExistente = await this.postulacionesRepository.findOne({
       where: { proyecto_id: projectId, usuario_id: usuarioId },
     });
-    if (yaPostulado) {
-      throw new ConflictException('Ya has enviado una postulación para este proyecto.');
+
+    if (postulacionExistente) {
+      throw new UnauthorizedException('Ya has enviado una postulación para este proyecto.');
     }
-  
+
     // Crear la nueva postulación
     const nuevaPostulacion = this.postulacionesRepository.create({
       proyecto_id: projectId,
       usuario_id: usuarioId,
       estado: 'pendiente',
     });
-    const postulacionGuardada = await this.postulacionesRepository.save(nuevaPostulacion);
-  
-    // Guardar las respuestas asociadas a la postulación
-    for (const respuesta of respuestas) {
-      await this.respuestasRepository.save({
-        postulacion_id: postulacionGuardada.postulacion_id,
-        formulario_id: respuesta.pregunta_id,
-        respuesta: respuesta.respuesta,
+    const postulacion = await this.postulacionesRepository.save(nuevaPostulacion);
+
+    // Guardar las respuestas asociadas
+    for (const respuestaDto of respuestasDto) {
+      const nuevaRespuesta = this.respuestasRepository.create({
+        postulacion_id: postulacion.postulacion_id,
+        formulario_id: respuestaDto.pregunta_id,
+        respuesta: respuestaDto.respuesta,
       });
+      await this.respuestasRepository.save(nuevaRespuesta);
     }
-  
-    return {
-      mensaje: 'Postulación creada con éxito.',
-      postulacionId: postulacionGuardada.postulacion_id,
-    };
+
+    // Crear una notificación para el propietario del proyecto
+    const mensaje = `Tienes una nueva postulación para revisar en el proyecto "${proyecto.nombre}".`;
+    await this.notificacionesService.crearNotificacion(proyecto.usuario_id, mensaje);
+
+    return { mensaje: 'Postulación enviada exitosamente.' };
   }
   
 
@@ -286,76 +292,126 @@ export class ProyectoService {
   async getPostulacionesDetalle(projectId: string, usuarioId: string) {
     // Buscar el proyecto
     const proyecto = await this.proyectoRepository.findOne({ where: { proyecto_id: projectId } });
-  
+
     if (!proyecto) {
-      throw new NotFoundException(`Proyecto con ID ${projectId} no encontrado.`);
+        throw new NotFoundException(`Proyecto con ID ${projectId} no encontrado.`);
     }
-  
+
     // Determinar si el usuario es propietario del proyecto
     const esPropietario = proyecto.usuario_id === usuarioId;
-  
+
     // Buscar las preguntas del formulario asociado al proyecto
     const preguntas = await this.formularioRepository.find({ where: { proyecto_id: projectId } });
-  
+
     // Caso: Sin preguntas en el formulario
     if (preguntas.length === 0) {
-      return esPropietario
-        ? {
+        return esPropietario
+            ? {
+                  esPropietario: true,
+                  esMiembro: false,
+                  yaPostulado: false,
+                  mensaje: 'No hay postulaciones abiertas para este proyecto.',
+                  formulario: [],
+                  postulaciones: [],
+              }
+            : {
+                  esPropietario: false,
+                  esMiembro: false,
+                  yaPostulado: false,
+                  mensaje: 'Este proyecto no tiene postulaciones disponibles en este momento.',
+                  formulario: [],
+              };
+    }
+
+    if (esPropietario) {
+        // Si es propietario, obtener todas las postulaciones con los nombres de los usuarios y sus respuestas
+        const postulaciones = await this.postulacionesRepository.find({ where: { proyecto_id: projectId } });
+
+        const postulacionesConDatos = await Promise.all(
+            postulaciones.map(async (postulacion) => {
+                // Obtener respuestas asociadas a la postulación
+                const respuestas = await this.respuestasRepository.find({ where: { postulacion_id: postulacion.postulacion_id } });
+
+                // Obtener nombre del usuario
+                const usuario = await this.usuarioRepository.findOne({ where: { usuario_id: postulacion.usuario_id } });
+
+                return {
+                    ...postulacion,
+                    usuario_nombre: usuario?.nombre || 'Desconocido',
+                    respuestas: respuestas.map((respuesta) => ({
+                        pregunta: preguntas.find((p) => p.formulario_id === respuesta.formulario_id)?.pregunta || '',
+                        respuesta: respuesta.respuesta,
+                    })),
+                };
+            }),
+        );
+
+        return {
             esPropietario: true,
             esMiembro: false,
             yaPostulado: false,
-            mensaje: 'No hay postulaciones abiertas para este proyecto.',
-            formulario: [],
-            postulaciones: [],
-          }
-        : {
-            esPropietario: false,
-            esMiembro: false,
-            yaPostulado: false,
-            mensaje: 'Este proyecto no tiene postulaciones disponibles en este momento.',
-            formulario: [],
-          };
+            mensaje: 'Gestión de postulaciones activas.',
+            formulario: preguntas,
+            postulaciones: postulacionesConDatos,
+        };
     }
-  
-    if (esPropietario) {
-      // Si es propietario, obtener todas las postulaciones y sus respuestas
-      const postulaciones = await this.postulacionesRepository.find({ where: { proyecto_id: projectId } });
-  
-      const postulacionesConRespuestas = await Promise.all(
-        postulaciones.map(async (postulacion) => {
-          const respuestas = await this.respuestasRepository.find({ where: { postulacion_id: postulacion.postulacion_id } });
-          return {
-            ...postulacion,
-            respuestas: respuestas.map((respuesta) => ({
-              pregunta: preguntas.find((p) => p.formulario_id === respuesta.formulario_id)?.pregunta || '',
-              respuesta: respuesta.respuesta,
-            })),
-          };
-        }),
-      );
-  
-      return {
-        esPropietario: true,
-        esMiembro: false,
-        yaPostulado: false,
-        mensaje: 'Gestión de postulaciones activas.',
-        formulario: preguntas,
-        postulaciones: postulacionesConRespuestas,
-      };
-    }
-  
+
     // Verificar si el usuario ya ha postulado
     const yaPostulado = await this.postulacionesRepository.findOne({ where: { proyecto_id: projectId, usuario_id: usuarioId } });
-  
+
     return {
-      esPropietario: false,
-      esMiembro: false,
-      yaPostulado: !!yaPostulado,
-      mensaje: yaPostulado
-        ? 'Ya has enviado una postulación para este proyecto.'
-        : 'Este proyecto tiene postulaciones abiertas. Completa el formulario para postularte.',
-      formulario: preguntas,
+        esPropietario: false,
+        esMiembro: false,
+        yaPostulado: !!yaPostulado,
+        mensaje: yaPostulado
+            ? 'Ya has enviado una postulación para este proyecto.'
+            : 'Este proyecto tiene postulaciones abiertas. Completa el formulario para postularte.',
+        formulario: preguntas,
     };
+}
+
+
+  async aceptarPostulacion(proyectoId: string, postulacionId: string, adminId: string) {
+    const proyecto = await this.findOne(proyectoId);
+  
+    if (proyecto.usuario_id !== adminId) {
+      throw new ForbiddenException('No tienes permisos para aceptar postulaciones.');
+    }
+  
+    const postulacion = await this.postulacionesRepository.findOne({
+      where: { postulacion_id: postulacionId, proyecto_id: proyectoId },
+    });
+  
+    if (!postulacion) {
+      throw new NotFoundException('Postulación no encontrada.');
+    }
+  
+    await this.addMember(proyectoId, postulacion.usuario_id, adminId);
+  
+    postulacion.estado = 'Aceptada';
+    return this.postulacionesRepository.save(postulacion);
   }
+  
+  async rechazarPostulacion(proyectoId: string, postulacionId: string, adminId: string) {
+    const proyecto = await this.findOne(proyectoId);
+  
+    if (proyecto.usuario_id !== adminId) {
+      throw new ForbiddenException('No tienes permisos para rechazar postulaciones.');
+    }
+  
+    const postulacion = await this.postulacionesRepository.findOne({
+      where: { postulacion_id: postulacionId, proyecto_id: proyectoId },
+    });
+  
+    if (!postulacion) {
+      throw new NotFoundException('Postulación no encontrada.');
+    }
+  
+    await this.respuestasRepository.delete({ postulacion_id: postulacionId });
+    await this.postulacionesRepository.delete(postulacionId);
+  
+    return { message: 'Postulación rechazada y eliminada exitosamente.' };
+  }
+  
   
 }

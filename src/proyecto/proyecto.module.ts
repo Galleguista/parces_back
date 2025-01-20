@@ -10,15 +10,19 @@ import { Bitacora } from './bitacora/entities/bitacora.entity';
 import { Formulario } from './administracion/formularios/entities/formulario.entity';
 import { Postulaciones } from './administracion/postulaciones/entities/postulacione.entity';
 import { Respuestas } from './administracion/respuestas/entities/respuesta.entity';
+import { NotificacionesModule } from 'src/system/notificaciones/notificaciones.module';
+import { Notificacion } from 'src/system/notificaciones/entities/notificacione.entity';
+import { NotificacionesService } from 'src/system/notificaciones/notificaciones.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Proyecto, Bitacora, Formulario, Postulaciones, Respuestas]),
+    TypeOrmModule.forFeature([Proyecto, Bitacora, Formulario, Postulaciones, Respuestas, Notificacion]),
     ConversacionModule,
     RoleScopeModule,
     UsersModule,
+    NotificacionesModule
   ],
-  providers: [ProyectoService],
+  providers: [ProyectoService, NotificacionesService],
   controllers: [ProyectoController],
   exports: [TypeOrmModule, ProyectoService],
 })

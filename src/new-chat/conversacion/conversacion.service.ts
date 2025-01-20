@@ -8,6 +8,7 @@ import { UserService } from 'src/users/users.service';
 import { Grupo } from 'src/admin/grupos/entities/grupo.entity';
 import { ProyectoService } from 'src/proyecto/proyecto.service';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
+import { Foro } from 'src/admin/foros/entities/foro.entity';
 
 @Injectable()
 export class ConversacionService {
@@ -19,6 +20,8 @@ export class ConversacionService {
     private readonly tipoConversacionService: TipoConversacionService,
     @InjectRepository(Proyecto)
     private readonly proyectoRepository: Repository<Proyecto>,
+    @InjectRepository(Foro)
+    private readonly foroRepository: Repository<Foro>,
     private usuarioRepository: UserService,
   ) {}
 
@@ -123,10 +126,10 @@ export class ConversacionService {
           return {
             ...conversacion,
             nombre: grupo?.nombre || 'Grupo sin nombre',
-            avatar: null, 
+            avatar: null,
           };
         }
-
+  
         if (tipo.nombre === 'proyecto') {
           const proyecto = await this.proyectoRepository.findOne({ where: { conversacion_id: conversacion.conversacion_id } });
           return {
@@ -135,7 +138,16 @@ export class ConversacionService {
             avatar: null,
           };
         }
-        
+  
+        // Nueva lógica para foros
+        if (tipo.nombre === 'foro') {
+          const foro = await this.foroRepository.findOne({ where: { conversacion_id: conversacion.conversacion_id } });
+          return {
+            ...conversacion,
+            nombre: foro?.nombre || 'Foro sin nombre',
+            avatar: null,
+          };
+        }
   
         return {
           ...conversacion,

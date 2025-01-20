@@ -11,6 +11,7 @@ import { UsersModule } from 'src/users/users.module';
 import { Proyecto } from 'src/proyecto/entities/proyecto.entity';
 import { TipoConversacionModule } from '../tipo-conversacion/tipo-conversacion.module';
 import { ProyectoModule } from 'src/proyecto/proyecto.module';
+import { Foro } from 'src/admin/foros/entities/foro.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { ProyectoModule } from 'src/proyecto/proyecto.module';
       Usuario,
       TipoConversacion,
       Grupo,
-      Proyecto
+      Proyecto,
+      Foro
     ]),
     UsersModule,
     

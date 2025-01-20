@@ -8,6 +8,7 @@ import {
   Body,
   UseGuards,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { GrupoService } from './grupos.service';
 import { CreateGrupoDto } from './dto/create-grupo.dto';
@@ -28,10 +29,16 @@ export class GrupoController {
     return this.grupoService.create(createGrupoDto, tipo_conversacion_id, usuario_id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.grupoService.findAll();
+  async findAll(@Request() req: any) {
+    const usuarioId = req.user.usuario_id;
+    if (!usuarioId) {
+      throw new UnauthorizedException('Usuario no autenticado');
+    }
+    return this.grupoService.findAllByUser(usuarioId);
   }
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -153,7 +153,11 @@ async updatePassword(
   }
 }
 
-
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async getUserById(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
 
   // @UseGuards(JwtAuthGuard)
   @Get()

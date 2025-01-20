@@ -13,4 +13,7 @@ export class Foro {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   fecha_creacion: Date;
+
+  @Column({ type: 'uuid', nullable: true })
+  conversacion_id: string; // Asociación con la conversación del foro
 }
