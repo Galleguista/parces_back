@@ -24,8 +24,7 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Contraseña incorrecta.');
     }
-  
-    const { password, ...result } = user; 
+      const { password, ...result } = user; 
     return result;
   }
   

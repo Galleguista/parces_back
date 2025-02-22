@@ -21,6 +21,8 @@ import { ScopeModule } from './system/scope/scope.module';
 import { RoleScopeModule } from './system/role-scope/role-scope.module';
 import { UserRoleModule } from './system/user-role/user-role.module';
 import { NotificacionesModule } from './system/notificaciones/notificaciones.module';
+import { EmailModule } from './system/email/email.module';
+import { NotificationTemplateModule } from './notification-template/notification-template.module';
 
 
 @Module({
@@ -62,6 +64,8 @@ import { NotificacionesModule } from './system/notificaciones/notificaciones.mod
     RoleScopeModule,
     UserRoleModule,
     NotificacionesModule,
+    EmailModule,
+    NotificationTemplateModule,
   ],
 })
 export class AppModule {}
