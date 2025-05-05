@@ -21,11 +21,11 @@ export class GrupoController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(
-    @Body() createGrupoDto: CreateGrupoDto,
-    @Body('tipo_conversacion_id') tipo_conversacion_id: string,
+    @Body() body: CreateGrupoDto & { tipo_conversacion_id: string },
     @Request() req: any,
   ) {
-    const usuario_id = req.user.usuario_id; // Usuario autenticado
+    const usuario_id = req.user.usuario_id;
+    const { tipo_conversacion_id, ...createGrupoDto } = body;
     return this.grupoService.create(createGrupoDto, tipo_conversacion_id, usuario_id);
   }
 
@@ -39,12 +39,13 @@ export class GrupoController {
     return this.grupoService.findAllByUser(usuarioId);
   }
 
-
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.grupoService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':grupo_id/miembros')
   getMembersOfGrupo(@Param('grupo_id') grupo_id: string) {
     return this.grupoService.getMembersOfGrupo(grupo_id);
@@ -54,11 +55,11 @@ export class GrupoController {
   @Post(':grupo_id/miembro')
   addMember(
     @Param('grupo_id') grupo_id: string,
-    @Body() body: { usuario_id: string },
+    @Body('usuario_id') usuario_id: string,
     @Request() req: any,
   ) {
     const admin_id = req.user.usuario_id;
-    return this.grupoService.addMember(grupo_id, body.usuario_id, admin_id);
+    return this.grupoService.addMember(grupo_id, usuario_id, admin_id);
   }
 
   @UseGuards(JwtAuthGuard)

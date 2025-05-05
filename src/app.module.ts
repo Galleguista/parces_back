@@ -23,6 +23,7 @@ import { UserRoleModule } from './system/user-role/user-role.module';
 import { NotificacionesModule } from './system/notificaciones/notificaciones.module';
 import { EmailModule } from './system/email/email.module';
 import { NotificationTemplateModule } from './notification-template/notification-template.module';
+import { ChatModule } from './chat/chat.module';
 
 
 @Module({
@@ -66,6 +67,7 @@ import { NotificationTemplateModule } from './notification-template/notification
     NotificacionesModule,
     EmailModule,
     NotificationTemplateModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

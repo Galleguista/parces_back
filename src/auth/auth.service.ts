@@ -84,20 +84,24 @@ export class AuthService {
   async validateToken(token: string) {
     try {
       const payload = this.jwtService.verify(token, {
-        algorithms: ['HS256'], // Asegura que el algoritmo sea válido
+        algorithms: ['HS256'],
       });
+  
       return {
         usuario: payload.usuario,
         sub: payload.sub,
         nombre: payload.nombre,
         role_id: payload.role_id,
         scopes: payload.scopes,
+        iat: payload.iat,   
+        exp: payload.exp,   
       };
     } catch (error) {
       console.error('Error al validar token:', error.message);
       throw new UnauthorizedException('Token inválido o expirado.');
     }
   }
+  
 
   async validateWsToken(token: string) {
     try {
